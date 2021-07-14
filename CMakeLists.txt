@@ -21,4 +21,5 @@ TARGET_LINK_LIBRARIES(fantasia-final allegro
         allegro_audio
         allegro_font
         allegro_dialog
+        allegro_image
         )
