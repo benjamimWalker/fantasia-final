@@ -2,69 +2,97 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
-#include <math.h>
+#include <cmath>
+#include <iostream>
 
 using namespace std;
 
 int main() {
-    ALLEGRO_DISPLAY *tela;
-    ALLEGRO_EVENT_QUEUE *fila;
+    //creating pointer variables
+    ALLEGRO_DISPLAY *display = nullptr;
+    ALLEGRO_EVENT_QUEUE *eventQueue;
     ALLEGRO_BITMAP *bitmap;
     ALLEGRO_TIMER *timer;
-    al_init();
+    enum Direction {DOWN, LEFT, RIGHT, UP};
+    if (!al_init()) {
+        al_show_native_message_box(display, "Temos problemas", "O jogo não conseguiu executar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
+    }
     timer = al_create_timer(1.0 / 300.0);
-    tela = al_create_display(720, 480);
-    fila = al_create_event_queue();
+    display = al_create_display(860, 483);
+    if (!display) {
+        al_show_native_message_box(display, "Temos problemas", "A tela não conseguiu carregar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
+    }
+    al_set_window_title(display, "Fantasia Final");
+    eventQueue = al_create_event_queue();
     al_install_keyboard();
     al_install_mouse();
-    al_register_event_source(fila, al_get_keyboard_event_source());
-    al_register_event_source(fila, al_get_mouse_event_source());
-    al_register_event_source(fila, al_get_display_event_source(tela));
-    al_register_event_source(fila, al_get_timer_event_source(timer));
+    al_register_event_source(eventQueue, al_get_keyboard_event_source());
+    al_register_event_source(eventQueue, al_get_mouse_event_source());
+    al_register_event_source(eventQueue, al_get_display_event_source(display));
+    al_register_event_source(eventQueue, al_get_timer_event_source(timer));
     al_init_image_addon();
 
-    bitmap = al_load_bitmap("../assets/sprites/dexter.png");
-    bool executando = true;
+    bitmap = al_load_bitmap("../assets/sprites/characters/Actors_1.png");
+    float spriteWidth =  (float) al_get_bitmap_width(bitmap) / 6;
+    float spriteHeight =  (float) al_get_bitmap_height(bitmap) / 4;
 
-    float x = 0, y = 0, r = 0;
+    bool running = true;
+    float x = 0, y = 0, moveSpeed = 2.2;
+    int direction;
+    float sX = spriteWidth, sY = 0;
+    bool isSpriteInNeedToUpdateByKeyInput = false;
+
     al_start_timer(timer);
-    while (executando) {
+    while (running) {
+        ALLEGRO_EVENT event;
+        al_wait_for_event(eventQueue, &event);
 
-        ALLEGRO_EVENT evento;
-        al_wait_for_event(fila, &evento);
-
-        if (evento.type == ALLEGRO_EVENT_TIMER) {
+        if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+            if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1) {
+                running = false;
+            }
+        }
+        if (event.type == ALLEGRO_EVENT_TIMER) {
             al_clear_to_color(al_map_rgb(53, 211, 221));
-            al_draw_rotated_bitmap(bitmap, al_get_bitmap_width(bitmap) / 2, al_get_bitmap_height(bitmap) / 2, x, y, r, 0);
+            al_draw_bitmap_region(bitmap, sX, direction * spriteHeight, spriteWidth, spriteHeight, x, y, 0);
             al_flip_display();
-        }
-        if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            executando = false;
-        }
 
 
-        ALLEGRO_KEYBOARD_STATE keyState;
-        al_get_keyboard_state(&keyState);
+            ALLEGRO_KEYBOARD_STATE keyState;
+            al_get_keyboard_state(&keyState);
 
-        if (al_key_down(&keyState, ALLEGRO_KEY_A)) {
-            x -= 3;
-            r = -M_PI / 2;
-        } else if (al_key_down(&keyState, ALLEGRO_KEY_D)) {
-            r = M_PI / 2;
-            x += 3;
-        } else if (al_key_down(&keyState, ALLEGRO_KEY_W)) {
-            r = 0.0;
-            y -= 3;
-        } else if (al_key_down(&keyState, ALLEGRO_KEY_S)) {
-            r = -M_PI;
-            y += 3;
+            isSpriteInNeedToUpdateByKeyInput = true;
+            if (al_key_down(&keyState, ALLEGRO_KEY_A)) {
+                x -= moveSpeed;
+                direction = LEFT;
+            } else if (al_key_down(&keyState, ALLEGRO_KEY_D)) {
+                x += moveSpeed;
+                direction = RIGHT;
+            } else if (al_key_down(&keyState, ALLEGRO_KEY_W)) {
+                direction = UP;
+                y -= moveSpeed;
+            } else if (al_key_down(&keyState, ALLEGRO_KEY_S)) {
+                y += moveSpeed;
+                direction = DOWN;
+            } else {
+                isSpriteInNeedToUpdateByKeyInput = false;
+            }
+            sY = direction;
+            if (isSpriteInNeedToUpdateByKeyInput) sX += spriteWidth;
+            else sX = spriteWidth;
+            cout << sX << endl;
+            if (sX >= 192) sX = 0;
         }
+
     }
 
-    al_destroy_display(tela);
+    // Cleaning garbage
+    al_destroy_display(display);
     al_uninstall_keyboard();
     al_uninstall_mouse();
     al_destroy_bitmap(bitmap);
     al_destroy_timer(timer);
-    return al_show_native_message_box(tela, "Title", "Heading", "Text", nullptr, 16 | 8);
+
+    return 0;
+    //END OF CODE
 }
