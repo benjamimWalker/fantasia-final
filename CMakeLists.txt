@@ -3,7 +3,7 @@ project(fantasia-final)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES main.cpp)
+set(SOURCE_FILES main.cpp player.cpp)
 add_executable(fantasia-final ${SOURCE_FILES})
 SET(ALLEGRO_ROOT allegro/)
 
