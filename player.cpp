@@ -26,7 +26,7 @@ public:
         life = pLife;
         points = pPoints;
         moveSpeed = pMoveSpeed;
-        name = pName;
+        name = std::move(pName);
     }
 
     void setDimensions() {
