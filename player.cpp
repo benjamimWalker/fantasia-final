@@ -21,6 +21,8 @@ public:
     float individualSpriteX;
     float individualSpriteY;
     bool alive = true;
+    int width;
+    int height;
 
     Player(int pLife, int pPoints, float pMoveSpeed, string pName){
         life = pLife;
@@ -29,6 +31,7 @@ public:
         name = std::move(pName);
     }
 
+    //function for adjusting sprites dimensions according to the characters
     void setDimensions() {
         spritePath = spritePath + name + ".png";
         if (name == "alan"){
@@ -44,6 +47,21 @@ public:
 
             individualSpriteX = (float) totalSpriteX / 3;
             individualSpriteY = (float) totalSpriteY / 4;
+        }
+    }
+    //function for detecting player trying to cross the limits and make sure it doesn't do that
+    void collision(float *x, float *y) const{
+        if (*x <= 0.0) {
+            *x = 0.0;
+        }
+        if(*x + individualSpriteX >= 919.0){
+            *x = 919.0f - individualSpriteX;
+        }
+        if (*y <= 0.0) {
+            *y = 0.0;
+        }
+        if(*y + individualSpriteY >= 517.0){
+            *y = 517.0f - individualSpriteY;
         }
     }
 };

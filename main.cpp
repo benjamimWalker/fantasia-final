@@ -24,7 +24,11 @@ int main() {
     ALLEGRO_DISPLAY *display = nullptr;
     ALLEGRO_EVENT_QUEUE *eventQueue;
     ALLEGRO_BITMAP *playerSprite;
+    ALLEGRO_BITMAP *mapa1;
     ALLEGRO_TIMER *timer;
+
+    const unsigned short windowHeight = 517; //window properties
+    const unsigned short windowWidth = 919;
 
     if (!al_init()) {
         al_show_native_message_box(display, "Temos problemas", "O jogo não conseguiu executar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
@@ -56,11 +60,13 @@ int main() {
     AudioManger audioManger;
 
     // setting player character
-    Player player = Player(0, 0, 1.2, "alan");
+    Player player = Player(0, 0, 1.2, "adaddddddddddddddddddddddddd");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
+    mapa1 = al_load_bitmap("../assets/sprites/maps/mapa1.png");
     float playerSpriteWidth =  player.individualSpriteX;
     float playerSpriteHeight =  player.individualSpriteY;
+
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
     float x = 40, y = 40; //coordinates for drawing each image
@@ -69,9 +75,9 @@ int main() {
     bool isSpriteInNeedToUpdateByKeyInput = false;
     al_start_timer(timer);
 
-
     // main loop
     while (running) {
+        al_draw_bitmap(mapa1, 0.0, 0.0, 0);
         ALLEGRO_EVENT event;
         al_wait_for_event(eventQueue, &event);
 
@@ -81,9 +87,12 @@ int main() {
                 running = false;
         }
         if (event.type == ALLEGRO_EVENT_TIMER) {
-            al_clear_to_color(al_map_rgb(40, 40, 40));
+            //call to function for detecting player trying to cross the limits and make sure it doesn't do that
+            player.collision(&x, &y);
+            //drawing player
             al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth, playerSpriteHeight, x, y, 0);
             al_flip_display();
+            //playing the themesong
             if (!audioManger.isPlaying){
                 audioManger.playLoop(geral_id);
             }
@@ -126,7 +135,6 @@ int main() {
     al_uninstall_audio();
     al_destroy_bitmap(playerSprite);
     al_destroy_timer(timer);
-
 
     return 0;
     //END OF CODE
