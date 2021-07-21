@@ -60,7 +60,7 @@ int main() {
     AudioManger audioManger;
 
     // setting player character
-    Player player = Player(0, 0, 1.2, "adaddddddddddddddddddddddddd");
+    Player player = Player(0, 0, 1.2, "ada");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     mapa1 = al_load_bitmap("../assets/sprites/maps/mapa1.png");

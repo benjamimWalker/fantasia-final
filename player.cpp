@@ -9,7 +9,6 @@
 using namespace std;
 
 class Player{
-
 public:
     string spritePath = "../assets/sprites/characters/";
     int life;
