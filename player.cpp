@@ -2,7 +2,8 @@
 #include <iostream>
 #include <cstring>
 #include <utility>
-
+#include <cmath>
+#pragma once
 //TODO REMOVE THIS CLION UNNECESSARY STUFF
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -22,12 +23,18 @@ public:
     bool alive = true;
     int width;
     int height;
+    float x = 40, y = 40; //coordinates for drawing each image of the player
 
-    Player(int pLife, int pPoints, float pMoveSpeed, string pName){
+     Player(int pLife, int pPoints, float pMoveSpeed, string pName){
         life = pLife;
         points = pPoints;
         moveSpeed = pMoveSpeed;
         name = std::move(pName);
+    }
+
+    // calculates the distance between the player and some object by it's coordinates
+    float distanceOf(int sourceX, int sourceY) const{
+        return (float) sqrt(pow((float) sourceX - x, 2) + pow((float)sourceY - y, 2));
     }
 
     //function for adjusting sprites dimensions according to the characters
@@ -49,18 +56,18 @@ public:
         }
     }
     //function for detecting player trying to cross the limits and make sure it doesn't do that
-    void collision(float *x, float *y) const{
-        if (*x <= 0.0) {
-            *x = 0.0;
+    void collision(){
+        if (x <= 0.0) {
+            x = 0.0;
         }
-        if(*x + individualSpriteX >= 919.0){
-            *x = 919.0f - individualSpriteX;
+        if(x + individualSpriteX >= 919.0){
+            x = 919.0f - individualSpriteX;
         }
-        if (*y <= 0.0) {
-            *y = 0.0;
+        if (y <= 0.0) {
+            y = 0.0;
         }
-        if(*y + individualSpriteY >= 517.0){
-            *y = 517.0f - individualSpriteY;
+        if(y + individualSpriteY >= 517.0){
+            y = 517.0f - individualSpriteY;
         }
     }
 };

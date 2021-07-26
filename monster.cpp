@@ -16,7 +16,7 @@ public:
         life -= damage / resistance;
         if (life < 0) alive = false;
     }
-    Monster(string _spritePath){
+    explicit Monster(string _spritePath){
         spritePath = _spritePath;
         attack = 10;
         life = 20;
