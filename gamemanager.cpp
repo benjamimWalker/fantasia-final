@@ -15,6 +15,10 @@ public:
     static unsigned short numEnemies; // 18
     static unsigned short level;
 
+   /* One of the most important piece of data
+    * it has a link between a vector with 1 to 3 monsters
+    * and a random coordinate
+    */
     static map<vector<Monster>, pair<int, int>> enemiesLocalization;
 
     vector<Monster> populateEnemies(){
@@ -33,16 +37,16 @@ public:
         }
     }
 
-    //TODO CHECAR ESSE BOOL
     bool foundMonster(const Player& p){
         bool pReturner = false;
         for (auto & enemy : enemiesLocalization){
-            if(p.distanceOf(enemy.second.first, enemy.second.second) < 13){
+            if(p.distanceOf(enemy.second.first, enemy.second.second) < 16){
                 pReturner = true;
             }
         }
         return pReturner;
     }
+
 };
 
 

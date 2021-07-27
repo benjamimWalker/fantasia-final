@@ -56,7 +56,7 @@ public:
         }
     }
     //function for detecting player trying to cross the limits and make sure it doesn't do that
-    void collision(){
+    void borderCollision(){
         if (x <= 0.0) {
             x = 0.0;
         }
@@ -70,4 +70,8 @@ public:
             y = 517.0f - individualSpriteY;
         }
     }
+
+    bool foundChest(){
+        return x > 863 and y < 8;
+     }
 };

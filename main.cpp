@@ -11,6 +11,7 @@
 #include "player.cpp"
 #include "audiomanager.cpp"
 #include "gamemanager.cpp"
+#include <unistd.h>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ using namespace std;
 //global gamemanager's static variables
 map<vector<Monster>, pair<int, int>> GameManager::enemiesLocalization;
 unsigned short GameManager::gameMode;
-unsigned short GameManager::numEnemies = 5;
+unsigned short GameManager::numEnemies = 42; //The answer
 unsigned short GameManager::level = 1;
 
 int main() {
@@ -34,6 +35,11 @@ int main() {
     ALLEGRO_EVENT_QUEUE *eventQueue;
     ALLEGRO_BITMAP *playerSprite;
     ALLEGRO_BITMAP *map1;
+    ALLEGRO_BITMAP *map2;
+    ALLEGRO_BITMAP *map3;
+    ALLEGRO_BITMAP *chest1;
+    ALLEGRO_BITMAP *chest2;
+    ALLEGRO_BITMAP *chest3;
     ALLEGRO_TIMER *timer;
 
     const unsigned short windowWidth = 919;
@@ -46,7 +52,7 @@ int main() {
     //display timer and fps creation
     const int FPS = 60;
     timer = al_create_timer(1.0 / FPS);
-    display = al_create_display(919, 517);
+    display = al_create_display(windowWidth, windowHeight);
     if (!display) {
         al_show_native_message_box(display, "Temos problemas", "A tela não conseguiu carregar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
     }
@@ -74,12 +80,19 @@ int main() {
     GameManager gameManager;
 
     // setting player character
-    Player player = Player(0, 0, 1.2, "ada");
+    Player player = Player(0, 0, 1.2, "alan");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
-    map1 = al_load_bitmap("../assets/sprites/maps/mapa1.png");
     float playerSpriteWidth =  player.individualSpriteX;
     float playerSpriteHeight =  player.individualSpriteY;
+
+    // loading images for the 3 maps and chests
+    map1 = al_load_bitmap("../assets/sprites/maps/mapa1.png");
+    chest1 = al_load_bitmap("../assets/sprites/chest1.png");
+    map2 = al_load_bitmap("../assets/sprites/maps/mapa2.png");
+    chest2 = al_load_bitmap("../assets/sprites/chest2.png");
+    map3 = al_load_bitmap("../assets/sprites/maps/mapa3.png");
+    chest3 = al_load_bitmap("../assets/sprites/chest3.png");
 
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
@@ -88,7 +101,7 @@ int main() {
     bool isSpriteInNeedToUpdateByKeyInput = false;
     al_start_timer(timer);
 
-    gameManager.sortPositions(windowWidth, windowHeight); //spreading monsters
+    gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2, (int) (windowHeight- playerSpriteWidth) - 2); //spreading monsters
     GameManager::gameMode = EXPLORING;
 
     // main loop
@@ -99,7 +112,12 @@ int main() {
             GameManager::gameMode = FIGHTING;
         }
 
+
         al_draw_bitmap(map1, 0.0, 0.0, 0);
+        if(player.foundChest())
+            al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+        else
+            al_draw_bitmap(chest1, windowWidth - 63, 8, 0);
         ALLEGRO_EVENT event;
         al_wait_for_event(eventQueue, &event);
 
@@ -110,14 +128,18 @@ int main() {
         }
         if (event.type == ALLEGRO_EVENT_TIMER) {
             //call to function for detecting player trying to cross the limits and make sure it doesn't do that
-            player.collision();
+            player.borderCollision();
 
             // TODO [DEBUG DRAWING]
             for(const auto& enemy: GameManager::enemiesLocalization){
                 for (auto monster: enemy.first){
-                    al_draw_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255), 1);
+                    al_draw_filled_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255));
                 }
             }
+
+            // TODO [DEBUG DRAWING]
+            al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
+
 
             //drawing player
             al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth, playerSpriteHeight, player.x, player.y, 0);
@@ -164,6 +186,7 @@ int main() {
     al_uninstall_mouse();
     al_uninstall_audio();
     al_destroy_bitmap(playerSprite);
+    al_destroy_bitmap(map1);
     al_destroy_timer(timer);
 
     return 0;
