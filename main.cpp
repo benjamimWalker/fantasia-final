@@ -156,7 +156,6 @@ int main() {
                 player.x -= player.moveSpeed;
                 direction = LEFT;
             } else if (al_key_down(&keyState, ALLEGRO_KEY_D)) {
-                audioManger.playOnce("passo");
                 player.x += player.moveSpeed;
                 direction = RIGHT;
             } else if (al_key_down(&keyState, ALLEGRO_KEY_W)) {
