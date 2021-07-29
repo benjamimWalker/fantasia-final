@@ -108,85 +108,74 @@ int main() {
     while (running) {
 
         // detects whether the player has found a monster and changes the game mode
-        if (gameManager.foundMonster(player)) {
-            //TODO UNCOMMENT
-         //   GameManager::gameMode = FIGHTING;
+        if(gameManager.foundMonster(player)){
+            GameManager::gameMode = FIGHTING;
         }
 
-        if (GameManager::gameMode == EXPLORING) {
-            al_draw_bitmap(map1, 0.0, 0.0, 0);
-            if (player.foundChest())
-                al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
-            else
-                al_draw_bitmap(chest1, windowWidth - 63, 8, 0);
-            ALLEGRO_EVENT event;
-            al_wait_for_event(eventQueue, &event);
 
-            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                //TODO descomentar essa parte no final
-                //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
+        al_draw_bitmap(map1, 0.0, 0.0, 0);
+        if(player.foundChest())
+            al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+        else
+            al_draw_bitmap(chest1, windowWidth - 63, 8, 0);
+        ALLEGRO_EVENT event;
+        al_wait_for_event(eventQueue, &event);
+
+        if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+            //TODO descomentar essa parte no final
+         //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
                 running = false;
-            }
-            if (event.type == ALLEGRO_EVENT_TIMER) {
-                //call to function for detecting player trying to cross the limits and make sure it doesn't do that
-                player.borderCollision();
-
-                // TODO [DEBUG DRAWING]
-                for (const auto &enemy: GameManager::enemiesLocalization) {
-                    for (auto monster: enemy.first) {
-                        al_draw_filled_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255));
-                    }
-                }
-
-                // TODO [DEBUG DRAWING]
-                al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
-
-
-                //drawing player
-                al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth,
-                                      playerSpriteHeight, player.x, player.y, 0);
-                al_flip_display();
-                //playing the themesong
-                if (!audioManger.isPlaying) {
-                    audioManger.playLoop(generalID);
-                }
-                // setting keyboard input
-                ALLEGRO_KEYBOARD_STATE keyState;
-                al_get_keyboard_state(&keyState);
-                isSpriteInNeedToUpdateByKeyInput = true;
-                if (al_key_down(&keyState, ALLEGRO_KEY_A)) {
-                    player.x -= player.moveSpeed;
-                    direction = LEFT;
-                } else if (al_key_down(&keyState, ALLEGRO_KEY_D)) {
-                    audioManger.playOnce("passo");
-                    player.x += player.moveSpeed;
-                    direction = RIGHT;
-                } else if (al_key_down(&keyState, ALLEGRO_KEY_W)) {
-                    direction = UP;
-                    player.y -= player.moveSpeed;
-                } else if (al_key_down(&keyState, ALLEGRO_KEY_S)) {
-                    player.y += player.moveSpeed;
-                    direction = DOWN;
-                } else {
-                    isSpriteInNeedToUpdateByKeyInput = false;
-                }
-
-                //handles the characters animation
-                if (spriteSheetAnimationRefreshFPS == 10) {
-                    if (isSpriteInNeedToUpdateByKeyInput) sX += playerSpriteWidth;
-                    else sX = playerSpriteWidth;
-                    if (sX >= (float) player.totalSpriteX) sX = 0;
-                }
-                spriteSheetAnimationRefreshFPS++;
-                if (spriteSheetAnimationRefreshFPS == 11) spriteSheetAnimationRefreshFPS = 0;
-            }
         }
+        if (event.type == ALLEGRO_EVENT_TIMER) {
+            //call to function for detecting player trying to cross the limits and make sure it doesn't do that
+            player.borderCollision();
 
-        else if (GameManager::gameMode == FIGHTING){
-            /*
-             *
-             * BATTLE CODE HERE
-             */
+            // TODO [DEBUG DRAWING]
+            for(const auto& enemy: GameManager::enemiesLocalization){
+                for (auto monster: enemy.first){
+                    al_draw_filled_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255));
+                }
+            }
+
+            // TODO [DEBUG DRAWING]
+            al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
+
+
+            //drawing player
+            al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth, playerSpriteHeight, player.x, player.y, 0);
+            al_flip_display();
+            //playing the themesong
+            if (!audioManger.isPlaying){
+                audioManger.playLoop(generalID);
+            }
+            // setting keyboard input
+            ALLEGRO_KEYBOARD_STATE keyState;
+            al_get_keyboard_state(&keyState);
+            isSpriteInNeedToUpdateByKeyInput = true;
+            if (al_key_down(&keyState, ALLEGRO_KEY_A)) {
+                player.x -= player.moveSpeed;
+                direction = LEFT;
+            } else if (al_key_down(&keyState, ALLEGRO_KEY_D)) {
+                player.x += player.moveSpeed;
+                direction = RIGHT;
+            } else if (al_key_down(&keyState, ALLEGRO_KEY_W)) {
+                direction = UP;
+                player.y -= player.moveSpeed;
+            } else if (al_key_down(&keyState, ALLEGRO_KEY_S)) {
+                player.y += player.moveSpeed;
+                direction = DOWN;
+            } else {
+                isSpriteInNeedToUpdateByKeyInput = false;
+            }
+
+            //handles the characters animation
+            if (spriteSheetAnimationRefreshFPS == 10){
+                if (isSpriteInNeedToUpdateByKeyInput) sX += playerSpriteWidth;
+                else sX = playerSpriteWidth;
+                if (sX >= (float) player.totalSpriteX) sX = 0;
+            }
+            spriteSheetAnimationRefreshFPS++;
+            if (spriteSheetAnimationRefreshFPS == 11) spriteSheetAnimationRefreshFPS = 0;
         }
     }
 
