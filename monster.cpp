@@ -2,6 +2,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <ctime>
 using namespace std;
 
 class Monster{
@@ -10,14 +11,21 @@ public:
     int life;
     bool alive = true;
     int resistance;
-    string spritePath;
+    string spritePath = "../assets/sprites/enemies/";
 
     void hit(int damage){
         life -= damage / resistance;
         if (life < 0) alive = false;
     }
-    explicit Monster(string _spritePath){
-        spritePath = _spritePath;
+    explicit Monster(){
+        int number = (int) (1 + random() % 24);
+        spritePath = spritePath + to_string(number) + ".png";
+
+        /*
+         * lógica para os demais atributos
+         * de acordo com número aqui
+         */
+
         attack = 10;
         life = 20;
         alive = true;

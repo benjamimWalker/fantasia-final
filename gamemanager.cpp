@@ -24,7 +24,7 @@ public:
     vector<Monster> populateEnemies(){
         vector<Monster> vec;
         for (int i = 0; i < (random() % 3) + 1; i++){
-            vec.emplace_back(Monster("path" + to_string(i)));
+            vec.emplace_back(Monster());
         }
         return vec;
     }
@@ -47,11 +47,14 @@ public:
         return pReturner;
     }
 
+
 };
 
 
-//
+//map<vector<Monster>, pair<int, int>> GameManager::enemiesLocalization;
+//unsigned short GameManager::numEnemies = 10;
 //int main(){
+//    srand (time (0));
 //    GameManager gameManager;
 //
 //    gameManager.sortPositions(1280, 720);
