@@ -12,6 +12,7 @@
 #include "audiomanager.cpp"
 #include "gamemanager.cpp"
 #include <unistd.h>
+// REALLY BIG TODO GARANTIR QUE O PERSONAGEM NÃO COMECE JÁ ENCIMA DE UM BANDO DE INIMIGOS
 
 using namespace std;
 
@@ -37,6 +38,7 @@ int main() {
     ALLEGRO_BITMAP *map1;
     ALLEGRO_BITMAP *map2;
     ALLEGRO_BITMAP *map3;
+    ALLEGRO_BITMAP *battleBitmaps[4];
     ALLEGRO_BITMAP *chest1;
     ALLEGRO_BITMAP *chest2;
     ALLEGRO_BITMAP *chest3;
@@ -94,6 +96,12 @@ int main() {
     map3 = al_load_bitmap("../assets/sprites/maps/mapa3.png");
     chest3 = al_load_bitmap("../assets/sprites/chest3.png");
 
+    //Loading battle images in an array
+    battleBitmaps[0] = al_load_bitmap("../assets/sprites/maps/battlemap1.png");
+    battleBitmaps[1] = al_load_bitmap("../assets/sprites/maps/battlemap2.png");
+    battleBitmaps[2] = al_load_bitmap("../assets/sprites/maps/battlemap3.png");
+    battleBitmaps[3] = al_load_bitmap("../assets/sprites/maps/battlemap4.png");
+
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
     int direction; //range from zero to four for changing the image's direction
@@ -101,19 +109,27 @@ int main() {
     bool isSpriteInNeedToUpdateByKeyInput = false;
     al_start_timer(timer);
 
+    srand (time (0));
     gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2, (int) (windowHeight- playerSpriteWidth) - 2); //spreading monsters
     GameManager::gameMode = EXPLORING;
+    vector<Monster> currentMonster; //Monsters loaded when entering in battle mode
+
+    bool shouldRandomANewBattleMapIndex;
 
     // main loop
     while (running) {
-
-        // detects whether the player has found a monster and changes the game mode
-        if (gameManager.foundMonster(player)) {
-            //TODO UNCOMMENT
-            //   GameManager::gameMode = FIGHTING;
-        }
+        int battleBitMapIndex; //Index for the battleBitMapArray  which will be a random number
 
         if (GameManager::gameMode == EXPLORING) {
+            // detects whether the player has found a monster and changes the game mode
+            if (gameManager.foundMonster(player, &currentMonster) and not player.exempted) {
+                GameManager::gameMode = FIGHTING;
+            }
+            //If player exit monster area he can find another
+            else if(not gameManager.foundMonster(player, &currentMonster)){
+                player.exempted = false;
+            }
+            shouldRandomANewBattleMapIndex = true;
             al_draw_bitmap(map1, 0.0, 0.0, 0);
             if (player.foundChest())
                 al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
@@ -181,11 +197,41 @@ int main() {
             }
         }
 
-        else if (GameManager::gameMode == FIGHTING){
-            /*
-             *
-             * BATTLE CODE HERE
-             */
+        else if (GameManager::gameMode == FIGHTING){ //Starts the FIGHT
+            /* battleBitMapIndex will always have a value because
+             * shouldRandomANewBattleMapIndex is previously set to true
+             * */
+            if (shouldRandomANewBattleMapIndex){
+                battleBitMapIndex = random() % 4;
+                for (auto & m : currentMonster) {
+                    m.prepareDrawing();
+                }
+
+            }
+            al_draw_bitmap(battleBitmaps[battleBitMapIndex], 0.0, 0.0, 0);
+            ALLEGRO_EVENT event;
+            al_wait_for_event(eventQueue, &event);
+
+            //Important for closing program with the window
+            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                //TODO descomentar essa parte no final
+                //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
+                running = false;
+                for (auto & m : currentMonster) {
+                    m.clean();
+                }
+            }
+            if (event.type == ALLEGRO_EVENT_TIMER){
+                al_draw_bitmap(currentMonster[0].bitmap, 0, 0, 0);
+                al_flip_display();
+            }
+
+
+
+//            GameManager::gameMode = EXPLORING;
+//          player.exempted = true;
+           shouldRandomANewBattleMapIndex = false;
+
         }
     }
 
@@ -196,6 +242,16 @@ int main() {
     al_uninstall_audio();
     al_destroy_bitmap(playerSprite);
     al_destroy_bitmap(map1);
+    al_destroy_bitmap(map2);
+    al_destroy_bitmap(map3);
+    al_destroy_bitmap(chest1);
+    al_destroy_bitmap(chest2);
+    al_destroy_bitmap(chest3);
+    al_destroy_bitmap(battleBitmaps[0]);
+    al_destroy_bitmap(battleBitmaps[1]);
+    al_destroy_bitmap(battleBitmaps[2]);
+    al_destroy_bitmap(battleBitmaps[3]);
+    al_destroy_event_queue(eventQueue);
     al_destroy_timer(timer);
 
     return 0;

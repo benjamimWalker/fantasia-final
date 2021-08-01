@@ -21,6 +21,7 @@ public:
     float individualSpriteX;
     float individualSpriteY;
     bool alive = true;
+    bool exempted = false;
     int width;
     int height;
     float x = 40, y = 40; //coordinates for drawing each image of the player

@@ -37,17 +37,15 @@ public:
         }
     }
 
-    bool foundMonster(const Player& p){
-        bool pReturner = false;
-        for (auto & enemy : enemiesLocalization){
-            if(p.distanceOf(enemy.second.first, enemy.second.second) < 16){
-                pReturner = true;
+     bool foundMonster(const Player& p, vector<Monster> * monsters) {
+        for (auto &enemy : enemiesLocalization) {
+            if (p.distanceOf(enemy.second.first, enemy.second.second) < 16) {
+                *monsters = enemy.first;
+                return true;
             }
         }
-        return pReturner;
+         return false;
     }
-
-
 };
 
 

@@ -12,6 +12,7 @@ public:
     bool alive = true;
     int resistance;
     string spritePath = "../assets/sprites/enemies/";
+    ALLEGRO_BITMAP *bitmap;
 
     void hit(int damage){
         life -= damage / resistance;
@@ -30,6 +31,16 @@ public:
         life = 20;
         alive = true;
         resistance = 15;
+    }
+
+public:
+    void prepareDrawing(){
+        bitmap = al_load_bitmap(spritePath.c_str());
+    }
+
+    //destroying the image loaded during the game execution
+    void clean(){
+        al_destroy_bitmap(bitmap);
     }
 
     bool operator <(const Monster& rhs) const
