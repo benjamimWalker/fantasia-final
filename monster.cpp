@@ -19,7 +19,7 @@ public:
         if (life < 0) alive = false;
     }
     explicit Monster(){
-        int number = (int) (1 + random() % 24);
+        int number = (int) (1 + random() % 17);
         spritePath = spritePath + to_string(number) + ".png";
 
         /*

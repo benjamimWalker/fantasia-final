@@ -35,6 +35,7 @@ int main() {
     ALLEGRO_DISPLAY *display = nullptr;
     ALLEGRO_EVENT_QUEUE *eventQueue;
     ALLEGRO_BITMAP *playerSprite;
+    ALLEGRO_BITMAP *playerBattleSprite;
     ALLEGRO_BITMAP *map1;
     ALLEGRO_BITMAP *map2;
     ALLEGRO_BITMAP *map3;
@@ -42,7 +43,8 @@ int main() {
     ALLEGRO_BITMAP *chest1;
     ALLEGRO_BITMAP *chest2;
     ALLEGRO_BITMAP *chest3;
-    ALLEGRO_TIMER *timer;
+    ALLEGRO_TIMER *expTimer;
+    ALLEGRO_TIMER *fightTimer;
 
     const unsigned short windowWidth = 919;
     const unsigned short windowHeight = 517; //window properties
@@ -51,9 +53,10 @@ int main() {
         al_show_native_message_box(display, "Temos problemas", "O jogo não conseguiu executar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
     }
 
-    //display timer and fps creation
+    //display expTimer and fps creation
     const int FPS = 60;
-    timer = al_create_timer(1.0 / FPS);
+    expTimer = al_create_timer(1.0 / FPS);
+    fightTimer = al_create_timer(1.0 / 4);
     display = al_create_display(windowWidth, windowHeight);
     if (!display) {
         al_show_native_message_box(display, "Temos problemas", "A tela não conseguiu carregar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
@@ -70,7 +73,8 @@ int main() {
     al_register_event_source(eventQueue, al_get_keyboard_event_source());
     al_register_event_source(eventQueue, al_get_mouse_event_source());
     al_register_event_source(eventQueue, al_get_display_event_source(display));
-    al_register_event_source(eventQueue, al_get_timer_event_source(timer));
+    al_register_event_source(eventQueue, al_get_timer_event_source(expTimer));
+    al_register_event_source(eventQueue, al_get_timer_event_source(fightTimer));
     al_init_image_addon();
     al_init_acodec_addon();
     al_init_primitives_addon();
@@ -85,6 +89,7 @@ int main() {
     Player player = Player(0, 0, 1.2, "alan");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
+    playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
     float playerSpriteWidth =  player.individualSpriteX;
     float playerSpriteHeight =  player.individualSpriteY;
 
@@ -107,18 +112,21 @@ int main() {
     int direction; //range from zero to four for changing the image's direction
     float sX = playerSpriteWidth; //the width of each individual sprite in the sprite sheet
     bool isSpriteInNeedToUpdateByKeyInput = false;
-    al_start_timer(timer);
+    al_start_timer(expTimer);
+    al_start_timer(fightTimer);
 
     srand (time (0));
     gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2, (int) (windowHeight- playerSpriteWidth) - 2); //spreading monsters
     GameManager::gameMode = EXPLORING;
     vector<Monster> currentMonster; //Monsters loaded when entering in battle mode
 
-    bool shouldRandomANewBattleMapIndex;
-
+    bool isOnBattle; //Set to true when an enemy is found
+    float sXM1 =  0; //Location to start drawing the first monster image of the spritesheet
+    float sXM2 =  0; //Location to start drawing the first monster image of the spritesheet
+    float sXM3 =  0; //Location to start drawing the first monster image of the spritesheet
     // main loop
     while (running) {
-        int battleBitMapIndex; //Index for the battleBitMapArray  which will be a random number
+        int battleBitMapIndex; //Index for the battleBitMapArray which will be a random number
 
         if (GameManager::gameMode == EXPLORING) {
             // detects whether the player has found a monster and changes the game mode
@@ -129,7 +137,7 @@ int main() {
             else if(not gameManager.foundMonster(player, &currentMonster)){
                 player.exempted = false;
             }
-            shouldRandomANewBattleMapIndex = true;
+            isOnBattle = true;
             al_draw_bitmap(map1, 0.0, 0.0, 0);
             if (player.foundChest())
                 al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
@@ -143,7 +151,7 @@ int main() {
                 //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
                 running = false;
             }
-            if (event.type == ALLEGRO_EVENT_TIMER) {
+            if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == expTimer) {
                 //call to function for detecting player trying to cross the limits and make sure it doesn't do that
                 player.borderCollision();
 
@@ -159,8 +167,7 @@ int main() {
 
 
                 //drawing player
-                al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth,
-                                      playerSpriteHeight, player.x, player.y, 0);
+                al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth, playerSpriteHeight, player.x, player.y, 0);
                 al_flip_display();
                 //playing the themesong
                 if (!audioManger.isPlaying) {
@@ -199,9 +206,9 @@ int main() {
 
         else if (GameManager::gameMode == FIGHTING){ //Starts the FIGHT
             /* battleBitMapIndex will always have a value because
-             * shouldRandomANewBattleMapIndex is previously set to true
+             * isOnBattle is previously set to true
              * */
-            if (shouldRandomANewBattleMapIndex){
+            if (isOnBattle){
                 battleBitMapIndex = random() % 4;
                 for (auto & m : currentMonster) {
                     m.prepareDrawing();
@@ -221,16 +228,35 @@ int main() {
                     m.clean();
                 }
             }
-            if (event.type == ALLEGRO_EVENT_TIMER){
-                al_draw_bitmap(currentMonster[0].bitmap, 0, 0, 0);
+            if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == fightTimer){
+                // Drawing each one of the monster in this for loop
+                for (int i = 0; i < currentMonster.size(); i++){
+                    auto width = (float) al_get_bitmap_width(currentMonster[i].bitmap);
+                    auto height = (float) al_get_bitmap_height(currentMonster[i].bitmap);
+                    if (i == 0){
+                        if(sXM1 >= (width - width / 3) - 1) sXM1 = 0;
+                        else sXM1 += width / 3;
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0,  width/ 3, height , 100, 200, 0);
+                    }
+                    else if(i == 1){
+                        if(sXM2 >= (width - width/ 3) - 1) sXM2 = 0;
+                        else sXM2 += width / 3;
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 150 + (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3, 200, 0);
+                    }
+                    else{
+                        if(sXM3 >= (width - width/ 3) - 1) sXM3 = 0;
+                        else sXM3 += width / 3;
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height, 200 +  (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3 + (float) al_get_bitmap_width(currentMonster[i-2].bitmap) / 3, 200, 0);
+                    }
+                } //Done drawing monster(s) for this frame
+
+                al_draw_bitmap(playerBattleSprite, 735, 220, 0); //Drawing player's sprite
                 al_flip_display();
             }
 
-
-
 //            GameManager::gameMode = EXPLORING;
 //          player.exempted = true;
-           shouldRandomANewBattleMapIndex = false;
+           isOnBattle = false;
 
         }
     }
@@ -241,6 +267,7 @@ int main() {
     al_uninstall_mouse();
     al_uninstall_audio();
     al_destroy_bitmap(playerSprite);
+    al_destroy_bitmap(playerBattleSprite);
     al_destroy_bitmap(map1);
     al_destroy_bitmap(map2);
     al_destroy_bitmap(map3);
@@ -252,7 +279,8 @@ int main() {
     al_destroy_bitmap(battleBitmaps[2]);
     al_destroy_bitmap(battleBitmaps[3]);
     al_destroy_event_queue(eventQueue);
-    al_destroy_timer(timer);
+    al_destroy_timer(expTimer);
+    al_destroy_timer(fightTimer);
 
     return 0;
     //END OF CODE

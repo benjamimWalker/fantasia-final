@@ -12,6 +12,7 @@ using namespace std;
 class Player{
 public:
     string spritePath = "../assets/sprites/characters/";
+    string battlePath = "../assets/sprites/characters/";
     int life;
     int points = 0;
     float moveSpeed;
@@ -41,6 +42,7 @@ public:
     //function for adjusting sprites dimensions according to the characters
     void setDimensions() {
         spritePath = spritePath + name + ".png";
+        battlePath = battlePath + name + "b.png";
         if (name == "alan"){
             totalSpriteX = 192;
             totalSpriteY = 166;
