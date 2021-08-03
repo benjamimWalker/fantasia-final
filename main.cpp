@@ -39,12 +39,14 @@ int main() {
     ALLEGRO_BITMAP *map1;
     ALLEGRO_BITMAP *map2;
     ALLEGRO_BITMAP *map3;
-    ALLEGRO_BITMAP *battleBitmaps[4];
+    ALLEGRO_BITMAP *battleBitmaps[3];
     ALLEGRO_BITMAP *chest1;
     ALLEGRO_BITMAP *chest2;
     ALLEGRO_BITMAP *chest3;
     ALLEGRO_TIMER *expTimer;
     ALLEGRO_TIMER *fightTimer;
+    ALLEGRO_SAMPLE *generalMusic;
+    ALLEGRO_SAMPLE *battleMusic;
 
     const unsigned short windowWidth = 919;
     const unsigned short windowHeight = 517; //window properties
@@ -105,7 +107,6 @@ int main() {
     battleBitmaps[0] = al_load_bitmap("../assets/sprites/maps/battlemap1.png");
     battleBitmaps[1] = al_load_bitmap("../assets/sprites/maps/battlemap2.png");
     battleBitmaps[2] = al_load_bitmap("../assets/sprites/maps/battlemap3.png");
-    battleBitmaps[3] = al_load_bitmap("../assets/sprites/maps/battlemap4.png");
 
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
@@ -129,9 +130,15 @@ int main() {
         int battleBitMapIndex; //Index for the battleBitMapArray which will be a random number
 
         if (GameManager::gameMode == EXPLORING) {
+            //playing the themesong
+            if (!audioManger.isPlaying) {
+                generalMusic = audioManger.playLoop(generalID);
+            }
+
             // detects whether the player has found a monster and changes the game mode
             if (gameManager.foundMonster(player, &currentMonster) and not player.exempted) {
-                GameManager::gameMode = FIGHTING;
+                GameManager::gameMode = FIGHTING; //boolean to enter the fight (battle) mode
+                audioManger.stopPlaying(generalMusic); //stopping the music
             }
             //If player exit monster area he can find another
             else if(not gameManager.foundMonster(player, &currentMonster)){
@@ -169,10 +176,7 @@ int main() {
                 //drawing player
                 al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth, playerSpriteHeight, player.x, player.y, 0);
                 al_flip_display();
-                //playing the themesong
-                if (!audioManger.isPlaying) {
-                    audioManger.playLoop(generalID);
-                }
+
                 // setting keyboard input
                 ALLEGRO_KEYBOARD_STATE keyState;
                 al_get_keyboard_state(&keyState);
@@ -208,8 +212,14 @@ int main() {
             /* battleBitMapIndex will always have a value because
              * isOnBattle is previously set to true
              * */
+
+            //playing the themesong of the battle
+            if (!audioManger.isPlaying) {
+                battleMusic = audioManger.playLoop(battleId);
+            }
+
             if (isOnBattle){
-                battleBitMapIndex = random() % 4;
+                battleBitMapIndex = 1; //TODO COLOCAR O RANDO DE 3 QUANDO O ESQUEMA DE FASES ESTIVER PRONTO
                 for (auto & m : currentMonster) {
                     m.prepareDrawing();
                 }
@@ -261,6 +271,7 @@ int main() {
         }
     }
 
+    audioManger.stopPlaying(battleMusic); // só pra não acabar com minha ram
     // Cleaning garbage
     al_destroy_display(display);
     al_uninstall_keyboard();
