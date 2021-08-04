@@ -19,6 +19,8 @@ private:
         al_reserve_samples(1);
         al_play_sample(pr, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
     }
+
+    //Receives a level number, plays the corresponding song and return its sample
     ALLEGRO_SAMPLE * playLoop(int level){
         string sampleToPlay;
         switch (level) {
@@ -41,6 +43,7 @@ private:
         isPlaying = true;
         return pr;
     }
+
     void stopPlaying(ALLEGRO_SAMPLE *sample){
         al_destroy_sample(sample);
         isPlaying = false;

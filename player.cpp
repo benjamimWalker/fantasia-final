@@ -14,7 +14,7 @@ public:
     string spritePath = "../assets/sprites/characters/";
     string battlePath = "../assets/sprites/characters/";
     int life;
-    int points = 0;
+    int points;
     float moveSpeed;
     string name;
     int totalSpriteX;
@@ -31,7 +31,7 @@ public:
         life = pLife;
         points = pPoints;
         moveSpeed = pMoveSpeed;
-        name = std::move(pName);
+        name = move(pName);
     }
 
     // calculates the distance between the player and some object by it's coordinates
@@ -76,5 +76,10 @@ public:
 
     bool foundChest(){
         return x > 863 and y < 8;
+     }
+
+     void hit(int damage){
+         life -= damage;
+         if (life <= 0) alive = false;
      }
 };

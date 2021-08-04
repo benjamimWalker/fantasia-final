@@ -11,6 +11,8 @@
 #include "player.cpp"
 #include "audiomanager.cpp"
 #include "gamemanager.cpp"
+#include "uimanager.cpp"
+
 #include <unistd.h>
 // REALLY BIG TODO GARANTIR QUE O PERSONAGEM NÃO COMECE JÁ ENCIMA DE UM BANDO DE INIMIGOS
 
@@ -58,7 +60,7 @@ int main() {
     //display expTimer and fps creation
     const int FPS = 60;
     expTimer = al_create_timer(1.0 / FPS);
-    fightTimer = al_create_timer(1.0 / 4);
+    fightTimer = al_create_timer(1.0 / 5);
     display = al_create_display(windowWidth, windowHeight);
     if (!display) {
         al_show_native_message_box(display, "Temos problemas", "A tela não conseguiu carregar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
@@ -87,8 +89,11 @@ int main() {
     // creating the instance of the game manager
     GameManager gameManager;
 
+    // creating the instance of the ui manager
+    UIManager uiManager;
+
     // setting player character
-    Player player = Player(0, 0, 1.2, "alan");
+    Player player = Player(20, 0, 1.2, "alan");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -165,14 +170,14 @@ int main() {
                 // TODO [DEBUG DRAWING]
                 for (const auto &enemy: GameManager::enemiesLocalization) {
                     for (auto monster: enemy.first) {
-                        al_draw_filled_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255));
+                        //al_draw_filled_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255));
                     }
                 }
 
                 // TODO [DEBUG DRAWING]
-                al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
+              //  al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
 
-
+                uiManager.drawLifebar();
                 //drawing player
                 al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth, playerSpriteHeight, player.x, player.y, 0);
                 al_flip_display();
@@ -246,21 +251,21 @@ int main() {
                     if (i == 0){
                         if(sXM1 >= (width - width / 3) - 1) sXM1 = 0;
                         else sXM1 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0,  width/ 3, height , 100, 200, 0);
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0,  width/ 3, height , 40, 200, 0);
                     }
                     else if(i == 1){
                         if(sXM2 >= (width - width/ 3) - 1) sXM2 = 0;
                         else sXM2 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 150 + (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3, 200, 0);
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 80 + (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3, 200, 0);
                     }
                     else{
                         if(sXM3 >= (width - width/ 3) - 1) sXM3 = 0;
                         else sXM3 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height, 200 +  (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3 + (float) al_get_bitmap_width(currentMonster[i-2].bitmap) / 3, 200, 0);
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height, 120 +  (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3 + (float) al_get_bitmap_width(currentMonster[i-2].bitmap) / 3, 200, 0);
                     }
                 } //Done drawing monster(s) for this frame
 
-                al_draw_bitmap(playerBattleSprite, 735, 220, 0); //Drawing player's sprite
+                al_draw_bitmap(playerBattleSprite, 800, 220, 0); //Drawing player's sprite
                 al_flip_display();
             }
 
@@ -288,7 +293,6 @@ int main() {
     al_destroy_bitmap(battleBitmaps[0]);
     al_destroy_bitmap(battleBitmaps[1]);
     al_destroy_bitmap(battleBitmaps[2]);
-    al_destroy_bitmap(battleBitmaps[3]);
     al_destroy_event_queue(eventQueue);
     al_destroy_timer(expTimer);
     al_destroy_timer(fightTimer);

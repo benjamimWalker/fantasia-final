@@ -8,18 +8,19 @@ using namespace std;
 class Monster{
 public:
     int attack;
-    int life;
+    float life;
     bool alive = true;
-    int resistance;
+    float resistance;
     string spritePath = "../assets/sprites/enemies/";
     ALLEGRO_BITMAP *bitmap;
 
-    void hit(int damage){
+    void hit(float damage){
         life -= damage / resistance;
-        if (life < 0) alive = false;
+        if (life <= 0) alive = false;
     }
+
     explicit Monster(){
-        int number = (int) (1 + random() % 17);
+        int number = (int) (1 + random() % 9);
         spritePath = spritePath + to_string(number) + ".png";
 
         /*
@@ -29,8 +30,8 @@ public:
 
         attack = 10;
         life = 20;
+        resistance = 1.6;
         alive = true;
-        resistance = 15;
     }
 
 public:
