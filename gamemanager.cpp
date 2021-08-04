@@ -15,6 +15,7 @@ public:
     static unsigned short numEnemies; // 18
     static unsigned short level;
 
+
    /* One of the most important piece of data
     * it has a link between a vector with 1 to 3 monsters
     * and a random coordinate
@@ -23,7 +24,7 @@ public:
 
     vector<Monster> populateEnemies(){
         vector<Monster> vec;
-        for (int i = 0; i < (random() % 3) + 1; i++){
+        for (int i = 0; i < 3; i++){ //(random() % 3) + 1
             vec.emplace_back(Monster());
         }
         return vec;

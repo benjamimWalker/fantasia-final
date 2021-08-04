@@ -14,6 +14,7 @@ public:
     string spritePath = "../assets/sprites/characters/";
     string battlePath = "../assets/sprites/characters/";
     int life;
+    int fullLife;
     int points;
     float moveSpeed;
     string name;
@@ -29,6 +30,7 @@ public:
 
      Player(int pLife, int pPoints, float pMoveSpeed, string pName){
         life = pLife;
+        fullLife = life;
         points = pPoints;
         moveSpeed = pMoveSpeed;
         name = move(pName);

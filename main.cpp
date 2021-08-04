@@ -1,10 +1,10 @@
 #include <allegro5/allegro5.h>
-#include <allegro5/allegro_font.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_ttf.h>
 #include <cmath>
 #include <vector>
 #include <iostream>
@@ -130,6 +130,8 @@ int main() {
     float sXM1 =  0; //Location to start drawing the first monster image of the spritesheet
     float sXM2 =  0; //Location to start drawing the first monster image of the spritesheet
     float sXM3 =  0; //Location to start drawing the first monster image of the spritesheet
+    uiManager.prepareUI();
+
     // main loop
     while (running) {
         int battleBitMapIndex; //Index for the battleBitMapArray which will be a random number
@@ -170,14 +172,12 @@ int main() {
                 // TODO [DEBUG DRAWING]
                 for (const auto &enemy: GameManager::enemiesLocalization) {
                     for (auto monster: enemy.first) {
-                        //al_draw_filled_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255));
+                        al_draw_filled_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255));
                     }
                 }
 
                 // TODO [DEBUG DRAWING]
-              //  al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
-
-                uiManager.drawLifebar();
+                al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
                 //drawing player
                 al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth, playerSpriteHeight, player.x, player.y, 0);
                 al_flip_display();
@@ -224,11 +224,10 @@ int main() {
             }
 
             if (isOnBattle){
-                battleBitMapIndex = 1; //TODO COLOCAR O RANDO DE 3 QUANDO O ESQUEMA DE FASES ESTIVER PRONTO
+                battleBitMapIndex = 1; //TODO COLOCAR O DA FASE CORRETA
                 for (auto & m : currentMonster) {
                     m.prepareDrawing();
                 }
-
             }
             al_draw_bitmap(battleBitmaps[battleBitMapIndex], 0.0, 0.0, 0);
             ALLEGRO_EVENT event;
@@ -239,9 +238,10 @@ int main() {
                 //TODO descomentar essa parte no final
                 //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
                 running = false;
-                for (auto & m : currentMonster) {
+                for(auto m: currentMonster){
                     m.clean();
                 }
+                uiManager.clean();
             }
             if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == fightTimer){
                 // Drawing each one of the monster in this for loop
@@ -251,21 +251,23 @@ int main() {
                     if (i == 0){
                         if(sXM1 >= (width - width / 3) - 1) sXM1 = 0;
                         else sXM1 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0,  width/ 3, height , 40, 200, 0);
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0,  width/ 3, height , 10, 200, 0);
                     }
                     else if(i == 1){
                         if(sXM2 >= (width - width/ 3) - 1) sXM2 = 0;
                         else sXM2 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 80 + (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3, 200, 0);
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3, 200, 0);
                     }
                     else{
                         if(sXM3 >= (width - width/ 3) - 1) sXM3 = 0;
                         else sXM3 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height, 120 +  (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3 + (float) al_get_bitmap_width(currentMonster[i-2].bitmap) / 3, 200, 0);
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height, 40 +  (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3 + (float) al_get_bitmap_width(currentMonster[i-2].bitmap) / 3, 200, 0);
                     }
                 } //Done drawing monster(s) for this frame
 
                 al_draw_bitmap(playerBattleSprite, 800, 220, 0); //Drawing player's sprite
+                uiManager.playerInfoBackground(player.name, player.fullLife, player.life / 2); //player background info
+                uiManager.enemiesInfoBackground(currentMonster);
                 al_flip_display();
             }
 
