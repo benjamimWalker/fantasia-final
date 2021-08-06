@@ -77,10 +77,23 @@ public:
     }
 
     void enemiesInfoBackground(const vector<Monster>& monsters) const {
+        int monsterIndicatorLocation = 0;
         //Background
         al_draw_filled_rounded_rectangle(10, 405, 670, 505, 6, 6, al_map_rgb(5, 55, 135));
 
         for (int i = 0; i < monsters.size(); i++) {
+            // Choice of X coordinate based on which monster was selected by input
+            if(monsters[i].isSelected){
+                if(i == 0){
+                    monsterIndicatorLocation = 107;
+                }
+                else if(i == 1){
+                    monsterIndicatorLocation = 330;
+                }
+                else if(i == 2){
+                    monsterIndicatorLocation = 565;
+                }
+            }
             if(i == 0){
                 float x2; //Second x coordinate for filled rectangle, for displaying current life
                 //Name
@@ -104,15 +117,16 @@ public:
             if(i == 2){
                 float x2; //Second x coordinate for filled rectangle, for displaying current life
                 //Name
-                al_draw_text(font, silver, 500, 410, 0, monsters[i].name.c_str());
+                al_draw_text(font, silver, 480, 410, 0, monsters[i].name.c_str());
                 //Unfilled rect
                 al_draw_rounded_rectangle(470, 450, 660, 464, 5, 5, silver, 2);
                 x2 = (float) (monsters[i].life * (660 - 470)) / (float) monsters[i].fullLife + 470;
                 //Filled rect
                 al_draw_filled_rounded_rectangle(470, 450, x2, 464, 4.5, 4.5, playerLife);
             }
+            if (monsterIndicatorLocation != 0)
+            al_draw_filled_circle((float) monsterIndicatorLocation, 485, 12, red);
         }
-
     }
 
     void clean() {

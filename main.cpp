@@ -94,7 +94,7 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(20, 0, 1.2, "alan");
+    Player player = Player(20, 0, 1.2, "ada");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -298,9 +298,9 @@ int main() {
                 uiManager.enemiesInfoBackground(currentMonster);
                 al_flip_display();
             }
-
-            // Options input [ATTACK, ESPECIAL and FLEE]
+            //Input by up, down, left and right keys
             if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+                // Options input [ATTACK, ESPECIAL and FLEE]
                 if(event.keyboard.keycode == ALLEGRO_KEY_DOWN){
                     if (commandsIndicies[ATTACK]){
                         commandsIndicies[ATTACK] = false;
@@ -313,7 +313,7 @@ int main() {
                         commandsIndicies[FLEE] = true;
                     }
                 }
-                else if(event.keyboard.keycode == ALLEGRO_KEY_UP){
+                if(event.keyboard.keycode == ALLEGRO_KEY_UP){
                     if(commandsIndicies[FLEE]){
                         commandsIndicies[ATTACK] = false;
                         commandsIndicies[FLEE] = false;
@@ -323,6 +323,63 @@ int main() {
                         commandsIndicies[FLEE] = false;
                         commandsIndicies[ESPECIAL] = false;
                         commandsIndicies[ATTACK] = true;
+                    }
+                }
+                //Monster switch with arrow keys
+                if(event.keyboard.keycode == ALLEGRO_KEY_LEFT){
+                    if(currentMonster.size() == 2){
+                        if(currentMonster[1].isSelected){
+                            currentMonster[0].isSelected = true;
+                            currentMonster[1].isSelected = false;
+                        }
+                    }
+                    if(currentMonster.size() == 3){
+                        if(currentMonster[1].isSelected){
+                            currentMonster[0].isSelected = true;
+                            currentMonster[1].isSelected = false;
+                            currentMonster[2].isSelected = false;
+                        }
+                        else if(currentMonster[2].isSelected){
+                            currentMonster[0].isSelected = false;
+                            currentMonster[1].isSelected = true;
+                            currentMonster[2].isSelected = false;
+                        }
+                    }
+                }
+                if(event.keyboard.keycode == ALLEGRO_KEY_RIGHT){
+                    if(currentMonster.size() == 2){
+                        if(currentMonster[0].isSelected){
+                            currentMonster[1].isSelected = true;
+                            currentMonster[0].isSelected = false;
+                        }
+                    }
+                    if(currentMonster.size() == 3){
+                        if(currentMonster[1].isSelected){
+                            currentMonster[0].isSelected = false;
+                            currentMonster[1].isSelected = false;
+                            currentMonster[2].isSelected = true;
+                        }
+                        else if(currentMonster[0].isSelected){
+                            currentMonster[0].isSelected = false;
+                            currentMonster[1].isSelected = true;
+                            currentMonster[2].isSelected = false;
+                        }
+                    }
+                }
+                if(event.keyboard.keycode == ALLEGRO_KEY_ENTER){
+                    for(int i = 0; i < currentMonster.size(); i++){
+                        if(currentMonster[i].isSelected){
+                            cout << currentMonster[i].name << endl;
+                            for (int j = 0; j < 3; j++) {
+                                if (commandsIndicies[j]){
+                                    switch (j) {
+                                        case ATTACK:
+                                            currentMonster[i].hit(player.attack);
+                                            break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
