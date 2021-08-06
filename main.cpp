@@ -69,6 +69,7 @@ int main() {
     // getting game settings done
     enum Direction {DOWN, LEFT, RIGHT, UP};
     enum GameModes{EXPLORING, FIGHTING};
+    enum Commands{ATTACK, ESPECIAL, FLEE};
     al_set_window_title(display, "Fantasia Final");
     eventQueue = al_create_event_queue();
     al_install_keyboard();
@@ -90,7 +91,7 @@ int main() {
     GameManager gameManager;
 
     // creating the instance of the ui manager
-    UIManager uiManager;
+    UIManager uiManager{};
 
     // setting player character
     Player player = Player(20, 0, 1.2, "alan");
@@ -120,8 +121,12 @@ int main() {
     bool isSpriteInNeedToUpdateByKeyInput = false;
     al_start_timer(expTimer);
     al_start_timer(fightTimer);
-
-    srand (time (0));
+    /*
+     * Random number generator seeded with a disallowed source of seed value will generate
+     * a predictable sequence of values
+     * But I couldn't figure out a better solution
+     */
+    srand (time (nullptr));
     gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2, (int) (windowHeight- playerSpriteWidth) - 2); //spreading monsters
     GameManager::gameMode = EXPLORING;
     vector<Monster> currentMonster; //Monsters loaded when entering in battle mode
@@ -130,6 +135,8 @@ int main() {
     float sXM1 =  0; //Location to start drawing the first monster image of the spritesheet
     float sXM2 =  0; //Location to start drawing the first monster image of the spritesheet
     float sXM3 =  0; //Location to start drawing the first monster image of the spritesheet
+    bool commandsIndicies[3] = {true, false, false};
+
     uiManager.prepareUI();
 
     // main loop
@@ -186,16 +193,34 @@ int main() {
                 ALLEGRO_KEYBOARD_STATE keyState;
                 al_get_keyboard_state(&keyState);
                 isSpriteInNeedToUpdateByKeyInput = true;
+
+                // Player movement by user input
                 if (al_key_down(&keyState, ALLEGRO_KEY_A)) {
+                    // Run
+                    if(al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
+                    // Walk
+                    else player.moveSpeed = 1.2;
                     player.x -= player.moveSpeed;
                     direction = LEFT;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_D)) {
+                    // Run
+                    if(al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
+                    // Walk
+                    else player.moveSpeed = 1.2;
                     player.x += player.moveSpeed;
                     direction = RIGHT;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_W)) {
+                    // Run
+                    if(al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
+                    // Walk
+                    else player.moveSpeed = 1.2;
                     direction = UP;
                     player.y -= player.moveSpeed;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_S)) {
+                    // Run
+                    if(al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
+                    // Walk
+                    else player.moveSpeed = 1.2;
                     player.y += player.moveSpeed;
                     direction = DOWN;
                 } else {
@@ -218,18 +243,21 @@ int main() {
              * isOnBattle is previously set to true
              * */
 
-            //playing the themesong of the battle
+            //playing the theme song of the battle
             if (!audioManger.isPlaying) {
                 battleMusic = audioManger.playLoop(battleId);
             }
 
+            //Executed once when a monster is found
             if (isOnBattle){
                 battleBitMapIndex = 1; //TODO COLOCAR O DA FASE CORRETA
+                currentMonster[0].isSelected = true;
+                //Load sprites for each monster found
                 for (auto & m : currentMonster) {
                     m.prepareDrawing();
                 }
             }
-            al_draw_bitmap(battleBitmaps[battleBitMapIndex], 0.0, 0.0, 0);
+            al_draw_bitmap(battleBitmaps[battleBitMapIndex], 0.0, 0.0, 0); // Drawing the map for current phase
             ALLEGRO_EVENT event;
             al_wait_for_event(eventQueue, &event);
 
@@ -266,9 +294,37 @@ int main() {
                 } //Done drawing monster(s) for this frame
 
                 al_draw_bitmap(playerBattleSprite, 800, 220, 0); //Drawing player's sprite
-                uiManager.playerInfoBackground(player.name, player.fullLife, player.life / 2); //player background info
+                uiManager.playerInfoBackground(player.name, player.fullLife, player.life / 2, commandsIndicies); //player background info
                 uiManager.enemiesInfoBackground(currentMonster);
                 al_flip_display();
+            }
+
+            // Options input [ATTACK, ESPECIAL and FLEE]
+            if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+                if(event.keyboard.keycode == ALLEGRO_KEY_DOWN){
+                    if (commandsIndicies[ATTACK]){
+                        commandsIndicies[ATTACK] = false;
+                        commandsIndicies[ESPECIAL] = true;
+                        commandsIndicies[FLEE] = false;
+                    }
+                    else if(commandsIndicies[ESPECIAL]){
+                        commandsIndicies[ATTACK] = false;
+                        commandsIndicies[ESPECIAL] = false;
+                        commandsIndicies[FLEE] = true;
+                    }
+                }
+                else if(event.keyboard.keycode == ALLEGRO_KEY_UP){
+                    if(commandsIndicies[FLEE]){
+                        commandsIndicies[ATTACK] = false;
+                        commandsIndicies[FLEE] = false;
+                        commandsIndicies[ESPECIAL] = true;
+                    }
+                   else if(commandsIndicies[ESPECIAL]){
+                        commandsIndicies[FLEE] = false;
+                        commandsIndicies[ESPECIAL] = false;
+                        commandsIndicies[ATTACK] = true;
+                    }
+                }
             }
 
 //            GameManager::gameMode = EXPLORING;

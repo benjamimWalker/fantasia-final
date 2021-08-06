@@ -1,5 +1,0 @@
-roxo claro: #AB05F2
-roxo profundo: #8F1FBF
-roxo suave: #9305F2
-roxo clarinho: #D1A0F2
-pretão grosso: #222126

@@ -37,23 +37,43 @@ public:
     }
 
     //Draw a rectangle in which the info will be displayed
-    void playerInfoBackground(const string &playerName, int fullLife, int life) const {
+    void playerInfoBackground(const string &playerName, int fullLife, int life, const bool commands[3]) const {
+        int attackIndicatorLocation = 0;
         float x2; //Second x coordinate for filled rectangle, for displaying current life
         //Background
         al_draw_filled_rounded_rectangle(695, 405, 905, 505, 6, 6, al_map_rgb(5, 55, 135));
         //Name
         al_draw_text(font, silver, 696, 405, 0, playerName.c_str());
-        //Unfilled rect
-        al_draw_rounded_rectangle(737, 409, 900, 423, 5, 5, silver, 2);
-        x2 = (float) (life * (900 - 737)) / (float) fullLife + 737;
-        //Filled rect
-        al_draw_filled_rounded_rectangle(737, 409, x2, 423, 4.5, 4.5, playerLife);
+        playerLifeBar(fullLife, life, make_pair(737, 409));
         //Divisor
         al_draw_line(697, 430, 903, 430, al_map_rgb(255, 255, 255), 1);
         //Action texts
         al_draw_text(font, silver, 895, 432, ALLEGRO_ALIGN_RIGHT, "Atacar");
         al_draw_text(font, silver, 895, 456, ALLEGRO_ALIGN_RIGHT, "Especial");
         al_draw_text(font, silver, 895, 480, ALLEGRO_ALIGN_RIGHT, "Fugir");
+
+        //Change where to draw the indicator based on which action is true
+        if(commands[0]){
+            attackIndicatorLocation = 444;
+        }
+        else if(commands[1]){
+            attackIndicatorLocation = 468;
+        }
+        else if (commands[2]){
+            attackIndicatorLocation = 492;
+        }
+
+        //Selected action indicator
+        al_draw_filled_circle(720, (float) attackIndicatorLocation, 8, red);
+    }
+
+    void playerLifeBar(int fullLife, int life, pair<int, int> where) const{
+        float x2; //Second x coordinate for filled rectangle, for displaying current life
+        //Unfilled rect
+        al_draw_rounded_rectangle((float) where.first, (float) where.second, (float) where.first + 163, (float) where.second + 14, 5, 5, silver, 2);
+        x2 = (float) (life * 163) / (float) fullLife + (float) where.first;
+        //Filled rect
+        al_draw_filled_rounded_rectangle((float) where.first, (float) where.second, x2, (float) where.second + 14, 4.5, 4.5, playerLife);
     }
 
     void enemiesInfoBackground(const vector<Monster>& monsters) const {

@@ -16,6 +16,7 @@ public:
     string name;
     string spritePath = "../assets/sprites/enemies/";
     ALLEGRO_BITMAP *bitmap;
+    bool isSelected;
 
     void hit(float damage){
         life -= damage / resistance;
@@ -25,6 +26,7 @@ public:
      Monster(){
         int number = (int) (1 + random() % 16);
         spritePath = spritePath + to_string(number) + ".png";
+        isSelected = false;
         switch (number) {
             case 1:
                 name = "Bichão Fortão";
