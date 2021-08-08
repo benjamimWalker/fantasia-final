@@ -27,6 +27,7 @@ public:
     bool exempted = false;
     int width;
     int height;
+    bool justAttacked = false;
     float x = 40, y = 40; //coordinates for drawing each image of the player
 
      Player(int pLife, int pPoints, float pMoveSpeed, string pName){

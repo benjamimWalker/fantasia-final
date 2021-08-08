@@ -47,6 +47,14 @@ public:
         }
          return false;
     }
+
+    int getSelecterMonster(vector<Monster> currentMonster){
+        for (int i = 0; i < currentMonster.size(); i++) {
+            if (currentMonster[i].isSelected) {
+                return i;
+            }
+        }
+    }
 };
 
 

@@ -54,7 +54,9 @@ int main() {
     const unsigned short windowHeight = 517; //window properties
 
     if (!al_init()) {
-        al_show_native_message_box(display, "Temos problemas", "O jogo não conseguiu executar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Temos problemas", "O jogo não conseguiu executar",
+                                   "Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",
+                                   nullptr, ALLEGRO_MESSAGEBOX_ERROR);
     }
 
     //display expTimer and fps creation
@@ -63,13 +65,21 @@ int main() {
     fightTimer = al_create_timer(1.0 / 5);
     display = al_create_display(windowWidth, windowHeight);
     if (!display) {
-        al_show_native_message_box(display, "Temos problemas", "A tela não conseguiu carregar","Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",nullptr, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Temos problemas", "A tela não conseguiu carregar",
+                                   "Veja se as instruções foram seguidas corretamente e  tente recompilar com algumas mudanças",
+                                   nullptr, ALLEGRO_MESSAGEBOX_ERROR);
     }
 
     // getting game settings done
-    enum Direction {DOWN, LEFT, RIGHT, UP};
-    enum GameModes{EXPLORING, FIGHTING};
-    enum Commands{ATTACK, ESPECIAL, FLEE};
+    enum Direction {
+        DOWN, LEFT, RIGHT, UP
+    };
+    enum GameModes {
+        EXPLORING, FIGHTING
+    };
+    enum Commands {
+        ATTACK, ESPECIAL, FLEE
+    };
     al_set_window_title(display, "Fantasia Final");
     eventQueue = al_create_event_queue();
     al_install_keyboard();
@@ -94,12 +104,12 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(20, 0, 1.2, "ada");
+    Player player = Player(70, 0, 1.2, "ada");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
-    float playerSpriteWidth =  player.individualSpriteX;
-    float playerSpriteHeight =  player.individualSpriteY;
+    float playerSpriteWidth = player.individualSpriteX;
+    float playerSpriteHeight = player.individualSpriteY;
 
     // loading images for the 3 maps and chests
     map1 = al_load_bitmap("../assets/sprites/maps/mapa1.png");
@@ -126,16 +136,18 @@ int main() {
      * a predictable sequence of values
      * But I couldn't figure out a better solution
      */
-    srand (time (nullptr));
-    gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2, (int) (windowHeight- playerSpriteWidth) - 2); //spreading monsters
+    srand(time(nullptr));
+    gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2,
+                              (int) (windowHeight - playerSpriteWidth) - 2); //spreading monsters
     GameManager::gameMode = EXPLORING;
     vector<Monster> currentMonster; //Monsters loaded when entering in battle mode
 
     bool isOnBattle; //Set to true when an enemy is found
-    float sXM1 =  0; //Location to start drawing the first monster image of the spritesheet
-    float sXM2 =  0; //Location to start drawing the first monster image of the spritesheet
-    float sXM3 =  0; //Location to start drawing the first monster image of the spritesheet
-    bool commandsIndicies[3] = {true, false, false};
+    float sXM1 = 0; //Location to start drawing the first monster image of the spritesheet
+    float sXM2 = 0; //Location to start drawing the first monster image of the spritesheet
+    float sXM3 = 0; //Location to start drawing the first monster image of the spritesheet
+    bool commandsIndicies[3] = {true, false, false}; // Array with the state of the commands attack, especial and flee
+    int previousTimeCount; // Used for counting time to an enemy wait a little for attack, or else it would be pretty fast
 
     uiManager.prepareUI();
 
@@ -154,8 +166,8 @@ int main() {
                 GameManager::gameMode = FIGHTING; //boolean to enter the fight (battle) mode
                 audioManger.stopPlaying(generalMusic); //stopping the music
             }
-            //If player exit monster area he can find another
-            else if(not gameManager.foundMonster(player, &currentMonster)){
+                //If player exit monster area he can find another
+            else if (not gameManager.foundMonster(player, &currentMonster)) {
                 player.exempted = false;
             }
             isOnBattle = true;
@@ -186,7 +198,8 @@ int main() {
                 // TODO [DEBUG DRAWING]
                 al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
                 //drawing player
-                al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth, playerSpriteHeight, player.x, player.y, 0);
+                al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth,
+                                      playerSpriteHeight, player.x, player.y, 0);
                 al_flip_display();
 
                 // setting keyboard input
@@ -197,29 +210,29 @@ int main() {
                 // Player movement by user input
                 if (al_key_down(&keyState, ALLEGRO_KEY_A)) {
                     // Run
-                    if(al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
-                    // Walk
+                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
+                        // Walk
                     else player.moveSpeed = 1.2;
                     player.x -= player.moveSpeed;
                     direction = LEFT;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_D)) {
                     // Run
-                    if(al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
-                    // Walk
+                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
+                        // Walk
                     else player.moveSpeed = 1.2;
                     player.x += player.moveSpeed;
                     direction = RIGHT;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_W)) {
                     // Run
-                    if(al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
-                    // Walk
+                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
+                        // Walk
                     else player.moveSpeed = 1.2;
                     direction = UP;
                     player.y -= player.moveSpeed;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_S)) {
                     // Run
-                    if(al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
-                    // Walk
+                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
+                        // Walk
                     else player.moveSpeed = 1.2;
                     player.y += player.moveSpeed;
                     direction = DOWN;
@@ -236,9 +249,7 @@ int main() {
                 spriteSheetAnimationRefreshFPS++;
                 if (spriteSheetAnimationRefreshFPS == 11) spriteSheetAnimationRefreshFPS = 0;
             }
-        }
-
-        else if (GameManager::gameMode == FIGHTING){ //Starts the FIGHT
+        } else if (GameManager::gameMode == FIGHTING) { //Starts the FIGHT
             /* battleBitMapIndex will always have a value because
              * isOnBattle is previously set to true
              * */
@@ -249,11 +260,11 @@ int main() {
             }
 
             //Executed once when a monster is found
-            if (isOnBattle){
+            if (isOnBattle) {
                 battleBitMapIndex = 1; //TODO COLOCAR O DA FASE CORRETA
                 currentMonster[0].isSelected = true;
                 //Load sprites for each monster found
-                for (auto & m : currentMonster) {
+                for (auto &m : currentMonster) {
                     m.prepareDrawing();
                 }
             }
@@ -266,127 +277,144 @@ int main() {
                 //TODO descomentar essa parte no final
                 //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
                 running = false;
-                for(auto m: currentMonster){
+                for (auto m: currentMonster) {
                     m.clean();
                 }
                 uiManager.clean();
             }
-            if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == fightTimer){
+            if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == fightTimer) {
                 // Drawing each one of the monster in this for loop
-                for (int i = 0; i < currentMonster.size(); i++){
+                for (int i = 0; i < currentMonster.size(); i++) {
                     auto width = (float) al_get_bitmap_width(currentMonster[i].bitmap);
                     auto height = (float) al_get_bitmap_height(currentMonster[i].bitmap);
-                    if (i == 0){
-                        if(sXM1 >= (width - width / 3) - 1) sXM1 = 0;
+                    if (i == 0) {
+                        if (sXM1 >= (width - width / 3) - 1) sXM1 = 0;
                         else sXM1 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0,  width/ 3, height , 10, 200, 0);
-                    }
-                    else if(i == 1){
-                        if(sXM2 >= (width - width/ 3) - 1) sXM2 = 0;
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
+                    } else if (i == 1) {
+                        if (sXM2 >= (width - width / 3) - 1) sXM2 = 0;
                         else sXM2 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3, 200, 0);
-                    }
-                    else{
-                        if(sXM3 >= (width - width/ 3) - 1) sXM3 = 0;
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200,0);
+                    } else {
+                        if (sXM3 >= (width - width / 3) - 1) sXM3 = 0;
                         else sXM3 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height, 40 +  (float) al_get_bitmap_width(currentMonster[i-1].bitmap) / 3 + (float) al_get_bitmap_width(currentMonster[i-2].bitmap) / 3, 200, 0);
+                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 + (float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
                     }
                 } //Done drawing monster(s) for this frame
-
-                al_draw_bitmap(playerBattleSprite, 800, 220, 0); //Drawing player's sprite
-                uiManager.playerInfoBackground(player.name, player.fullLife, player.life / 2, commandsIndicies); //player background info
-                uiManager.enemiesInfoBackground(currentMonster);
+                if (player.justAttacked){
+                    if(al_get_timer_count(fightTimer) - previousTimeCount <= 2){
+                        al_draw_tinted_bitmap(playerBattleSprite,al_map_rgb(48, 219, 48), 800, 220, 0); //Drawing player's sprite
+                    }
+                    else if (al_get_timer_count(fightTimer) - previousTimeCount > 4 and al_get_timer_count(fightTimer) - previousTimeCount < 7){
+                        al_draw_tinted_bitmap(playerBattleSprite,al_map_rgb(217, 58, 43), 800, 220, 0); //Drawing player's sprite
+                    }
+                    else{
+                        al_draw_bitmap(playerBattleSprite, 800, 220, 0);
+                    }
+                }
+                else{
+                    al_draw_bitmap(playerBattleSprite, 800, 220, 0);
+                }
+                uiManager.playerInfoBackground(player.name, player.fullLife, player.life, commandsIndicies); //player background info
+                uiManager.enemiesInfoBackground(currentMonster); //monsters background info
                 al_flip_display();
             }
             //Input by up, down, left and right keys
-            if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+            if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
                 // Options input [ATTACK, ESPECIAL and FLEE]
-                if(event.keyboard.keycode == ALLEGRO_KEY_DOWN){
-                    if (commandsIndicies[ATTACK]){
+                if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+                    if (commandsIndicies[ATTACK]) {
                         commandsIndicies[ATTACK] = false;
                         commandsIndicies[ESPECIAL] = true;
                         commandsIndicies[FLEE] = false;
-                    }
-                    else if(commandsIndicies[ESPECIAL]){
+                    } else if (commandsIndicies[ESPECIAL]) {
                         commandsIndicies[ATTACK] = false;
                         commandsIndicies[ESPECIAL] = false;
                         commandsIndicies[FLEE] = true;
                     }
                 }
-                if(event.keyboard.keycode == ALLEGRO_KEY_UP){
-                    if(commandsIndicies[FLEE]){
+                if (event.keyboard.keycode == ALLEGRO_KEY_UP) {
+                    if (commandsIndicies[FLEE]) {
                         commandsIndicies[ATTACK] = false;
                         commandsIndicies[FLEE] = false;
                         commandsIndicies[ESPECIAL] = true;
-                    }
-                   else if(commandsIndicies[ESPECIAL]){
+                    } else if (commandsIndicies[ESPECIAL]) {
                         commandsIndicies[FLEE] = false;
                         commandsIndicies[ESPECIAL] = false;
                         commandsIndicies[ATTACK] = true;
                     }
                 }
                 //Monster switch with arrow keys
-                if(event.keyboard.keycode == ALLEGRO_KEY_LEFT){
-                    if(currentMonster.size() == 2){
-                        if(currentMonster[1].isSelected){
+                if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+                    if (currentMonster.size() == 2) {
+                        if (currentMonster[1].isSelected) {
                             currentMonster[0].isSelected = true;
                             currentMonster[1].isSelected = false;
                         }
                     }
-                    if(currentMonster.size() == 3){
-                        if(currentMonster[1].isSelected){
+                    if (currentMonster.size() == 3) {
+                        if (currentMonster[1].isSelected) {
                             currentMonster[0].isSelected = true;
                             currentMonster[1].isSelected = false;
                             currentMonster[2].isSelected = false;
-                        }
-                        else if(currentMonster[2].isSelected){
+                        } else if (currentMonster[2].isSelected) {
                             currentMonster[0].isSelected = false;
                             currentMonster[1].isSelected = true;
                             currentMonster[2].isSelected = false;
                         }
                     }
                 }
-                if(event.keyboard.keycode == ALLEGRO_KEY_RIGHT){
-                    if(currentMonster.size() == 2){
-                        if(currentMonster[0].isSelected){
+                if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+                    if (currentMonster.size() == 2) {
+                        if (currentMonster[0].isSelected) {
                             currentMonster[1].isSelected = true;
                             currentMonster[0].isSelected = false;
                         }
                     }
-                    if(currentMonster.size() == 3){
-                        if(currentMonster[1].isSelected){
+                    if (currentMonster.size() == 3) {
+                        if (currentMonster[1].isSelected) {
                             currentMonster[0].isSelected = false;
                             currentMonster[1].isSelected = false;
                             currentMonster[2].isSelected = true;
-                        }
-                        else if(currentMonster[0].isSelected){
+                        } else if (currentMonster[0].isSelected) {
                             currentMonster[0].isSelected = false;
                             currentMonster[1].isSelected = true;
                             currentMonster[2].isSelected = false;
                         }
                     }
                 }
-                if(event.keyboard.keycode == ALLEGRO_KEY_ENTER){
-                    for(int i = 0; i < currentMonster.size(); i++){
-                        if(currentMonster[i].isSelected){
-                            cout << currentMonster[i].name << endl;
-                            for (int j = 0; j < 3; j++) {
-                                if (commandsIndicies[j]){
-                                    switch (j) {
-                                        case ATTACK:
-                                            currentMonster[i].hit(player.attack);
-                                            break;
+                // Check if player entered an option
+                if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
+                    for (int j = 0; j < 3; j++) { // Cycles through the options
+                        if (commandsIndicies[j]) { // What option is selected
+                            switch (j) {
+                                case ATTACK: // Check if the option is attack
+                                    // Check if it is player's turn
+                                    if (not player.justAttacked) {
+                                        // Player attack monster
+                                        currentMonster[gameManager.getSelecterMonster(currentMonster)].hit(player.attack);
+                                        player.justAttacked = true; // Player just attacked, so it is not it's turn
+                                        al_set_timer_count(fightTimer,  0);
+                                        previousTimeCount = (int) al_get_timer_count(fightTimer);
                                     }
-                                }
+                                    break;
                             }
                         }
                     }
+
+                }
+            }
+
+            if (player.justAttacked) {
+                 if(al_get_timer_count(fightTimer) - previousTimeCount >= 8){
+                     player.justAttacked = false;
+                     player.hit(currentMonster[0].attack); //TODO FAZER A INTERCALAÇÃO DELES
                 }
             }
 
 //            GameManager::gameMode = EXPLORING;
 //          player.exempted = true;
-           isOnBattle = false;
+            isOnBattle = false;
 
         }
     }
