@@ -47,11 +47,99 @@ public:
         }
          return false;
     }
-
-    int getSelecterMonster(vector<Monster> currentMonster){
+    /*
+     * Returns the index of the monster that is selected to be attacked
+     */
+    int getSelected(vector<Monster> currentMonster){
         for (int i = 0; i < currentMonster.size(); i++) {
             if (currentMonster[i].isSelected) {
                 return i;
+            }
+        }
+    }
+
+    //Changes the selected monster from right to left
+    void changeSelectedRight(vector<Monster> *currentMonster){
+        if (currentMonster->size() == 2) {
+            if (currentMonster->at(0).isSelected) {
+                currentMonster->at(0).isSelected = true;
+                currentMonster->at(1).isSelected = false;
+            }
+        }
+        if (currentMonster->size() == 3) {
+            if (currentMonster->at(1).isSelected) {
+                currentMonster->at(0).isSelected = false;
+                currentMonster->at(1).isSelected = false;
+                currentMonster->at(2).isSelected = true;
+            } else if (currentMonster->at(0).isSelected) {
+                currentMonster->at(0).isSelected = false;
+                currentMonster->at(1).isSelected = true;
+                currentMonster->at(2).isSelected = false;
+            }
+        }
+    }
+
+    //Changes the selected monster from left to right
+    void changeSelectedLeft(vector<Monster> *currentMonster){
+        if (currentMonster->size() == 2) {
+            if (currentMonster->at(1).isSelected) {
+                currentMonster->at(0).isSelected = true;
+                currentMonster->at(1).isSelected = false;
+            }
+        }
+        if (currentMonster->size() == 3) {
+            if (currentMonster->at(1).isSelected) {
+                currentMonster->at(0).isSelected = true;
+                currentMonster->at(1).isSelected = false;
+                currentMonster->at(2).isSelected = false;
+            } else if (currentMonster->at(2).isSelected) {
+                currentMonster->at(0).isSelected = false;
+                currentMonster->at(1).isSelected = true;
+                currentMonster->at(2).isSelected = false;
+            }
+        }
+    }
+
+
+    /*
+     * Returns the index of the monster that will be the next to attack
+     */
+    int getNextToAttack(vector<Monster> currentMonster){
+        for (int i = 0; i < currentMonster.size(); i++) {
+            if (currentMonster[i].isNextToAttack) {
+                cout << "Atacado por " << i << endl;
+                return i;
+            }
+        }
+
+    }
+
+    //Changes the next monster that will attack
+    void changeNextoToAttak(vector<Monster> *currentMonster){
+        if (currentMonster->size() == 2) {
+            if (currentMonster->at(0).isNextToAttack) {
+                currentMonster->at(1).isNextToAttack = true;
+                currentMonster->at(0).isNextToAttack = false;
+            }
+            else if(currentMonster->at(1).isNextToAttack){
+                currentMonster->at(0).isNextToAttack = true;
+                currentMonster->at(1).isNextToAttack = false;
+            }
+        }
+        if (currentMonster->size() == 3) {
+            if(currentMonster->at(0).isNextToAttack){
+                currentMonster->at(0).isNextToAttack = false;
+                currentMonster->at(1).isNextToAttack = true;
+                currentMonster->at(2).isNextToAttack = false;
+            }
+            else if (currentMonster->at(1).isNextToAttack) {
+                currentMonster->at(0).isNextToAttack = false;
+                currentMonster->at(1).isNextToAttack = false;
+                currentMonster->at(2).isNextToAttack = true;
+            } else if (currentMonster->at(2).isNextToAttack) {
+                currentMonster->at(0).isNextToAttack = true;
+                currentMonster->at(1).isNextToAttack = false;
+                currentMonster->at(2).isNextToAttack = false;
             }
         }
     }

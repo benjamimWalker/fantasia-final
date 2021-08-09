@@ -263,6 +263,7 @@ int main() {
             if (isOnBattle) {
                 battleBitMapIndex = 1; //TODO COLOCAR O DA FASE CORRETA
                 currentMonster[0].isSelected = true;
+                currentMonster[0].isNextToAttack = true;
                 //Load sprites for each monster found
                 for (auto &m : currentMonster) {
                     m.prepareDrawing();
@@ -346,42 +347,10 @@ int main() {
                 }
                 //Monster switch with arrow keys
                 if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-                    if (currentMonster.size() == 2) {
-                        if (currentMonster[1].isSelected) {
-                            currentMonster[0].isSelected = true;
-                            currentMonster[1].isSelected = false;
-                        }
-                    }
-                    if (currentMonster.size() == 3) {
-                        if (currentMonster[1].isSelected) {
-                            currentMonster[0].isSelected = true;
-                            currentMonster[1].isSelected = false;
-                            currentMonster[2].isSelected = false;
-                        } else if (currentMonster[2].isSelected) {
-                            currentMonster[0].isSelected = false;
-                            currentMonster[1].isSelected = true;
-                            currentMonster[2].isSelected = false;
-                        }
-                    }
+                    gameManager.changeSelectedLeft(&currentMonster);
                 }
                 if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-                    if (currentMonster.size() == 2) {
-                        if (currentMonster[0].isSelected) {
-                            currentMonster[1].isSelected = true;
-                            currentMonster[0].isSelected = false;
-                        }
-                    }
-                    if (currentMonster.size() == 3) {
-                        if (currentMonster[1].isSelected) {
-                            currentMonster[0].isSelected = false;
-                            currentMonster[1].isSelected = false;
-                            currentMonster[2].isSelected = true;
-                        } else if (currentMonster[0].isSelected) {
-                            currentMonster[0].isSelected = false;
-                            currentMonster[1].isSelected = true;
-                            currentMonster[2].isSelected = false;
-                        }
-                    }
+                    gameManager.changeSelectedRight(&currentMonster);
                 }
                 // Check if player entered an option
                 if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
@@ -392,7 +361,7 @@ int main() {
                                     // Check if it is player's turn
                                     if (not player.justAttacked) {
                                         // Player attack monster
-                                        currentMonster[gameManager.getSelecterMonster(currentMonster)].hit(player.attack);
+                                        currentMonster[gameManager.getSelected(currentMonster)].hit(player.attack);
                                         player.justAttacked = true; // Player just attacked, so it is not it's turn
                                         al_set_timer_count(fightTimer,  0);
                                         previousTimeCount = (int) al_get_timer_count(fightTimer);
@@ -408,7 +377,10 @@ int main() {
             if (player.justAttacked) {
                  if(al_get_timer_count(fightTimer) - previousTimeCount >= 8){
                      player.justAttacked = false;
-                     player.hit(currentMonster[0].attack); //TODO FAZER A INTERCALAÇÃO DELES
+
+                     player.hit(currentMonster[gameManager.getNextToAttack(currentMonster)].attack);
+
+                     gameManager.changeNextoToAttak(&currentMonster);
                 }
             }
 

@@ -17,6 +17,7 @@ public:
     string spritePath = "../assets/sprites/enemies/";
     ALLEGRO_BITMAP *bitmap;
     bool isSelected;
+    bool isNextToAttack = false;
 public:
     void hit(float damage){
         life -= damage / resistance;
