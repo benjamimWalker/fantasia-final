@@ -131,6 +131,8 @@ int main() {
     bool isSpriteInNeedToUpdateByKeyInput = false;
     al_start_timer(expTimer);
     al_start_timer(fightTimer);
+    ALLEGRO_COLOR attackColor = al_map_rgb(48, 219, 48);
+    ALLEGRO_COLOR damageColor = al_map_rgb(217, 58, 43);
     /*
      * Random number generator seeded with a disallowed source of seed value will generate
      * a predictable sequence of values
@@ -291,32 +293,86 @@ int main() {
                     if (i == 0) {
                         if (sXM1 >= (width - width / 3) - 1) sXM1 = 0;
                         else sXM1 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
+
+                        if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
+                            if (gameManager.getSelected(currentMonster) == i) {
+                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM1, 0, width / 3, height, 10, 200, 0);
+                            } else {
+                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
+                            }
+                        } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
+                                   al_get_timer_count(fightTimer) - previousTimeCount < 8) {
+                            if (gameManager.getNextToAttack(currentMonster) == i) {
+                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, attackColor, sXM1, 0, width / 3, height, 10, 200, 0);
+                            } else {
+                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
+                            }
+                        } else {
+                            al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
+                        }
+
                     } else if (i == 1) {
                         if (sXM2 >= (width - width / 3) - 1) sXM2 = 0;
                         else sXM2 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200,0);
+
+                        if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
+                            if (gameManager.getSelected(currentMonster) == i) {
+                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                            } else {
+                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                            }
+                        }
+
+                        else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
+                            al_get_timer_count(fightTimer) - previousTimeCount < 8) {
+                            if (gameManager.getNextToAttack(currentMonster) == i) {
+                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, attackColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                            } else {
+                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                            }
+                        } else {
+                            al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                        }
+
                     } else {
                         if (sXM3 >= (width - width / 3) - 1) sXM3 = 0;
                         else sXM3 += width / 3;
-                        al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 + (float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+
+                        if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
+                            if (gameManager.getSelected(currentMonster) == i) {
+                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                            } else {
+                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                            }
+                        }
+
+                        else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
+                        al_get_timer_count(fightTimer) - previousTimeCount < 8) {
+                            if (gameManager.getNextToAttack(currentMonster) == i) {
+                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, attackColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                            } else {
+                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                            }
+                        } else {
+                            al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                        }
                     }
                 } //Done drawing monster(s) for this frame
-                if (player.justAttacked){
-                    if(al_get_timer_count(fightTimer) - previousTimeCount <= 2){
-                        al_draw_tinted_bitmap(playerBattleSprite,al_map_rgb(48, 219, 48), 800, 220, 0); //Drawing player's sprite
-                    }
-                    else if (al_get_timer_count(fightTimer) - previousTimeCount > 4 and al_get_timer_count(fightTimer) - previousTimeCount < 7){
-                        al_draw_tinted_bitmap(playerBattleSprite,al_map_rgb(217, 58, 43), 800, 220, 0); //Drawing player's sprite
-                    }
-                    else{
+                if (player.justAttacked) {
+                    if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
+                        al_draw_tinted_bitmap(playerBattleSprite, attackColor, 800, 220, 0); //Drawing player's sprite
+                    } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
+                               al_get_timer_count(fightTimer) - previousTimeCount < 8) {
+                        al_draw_tinted_bitmap(playerBattleSprite, damageColor, 800, 220, 0); //Drawing player's sprite
+                        uiManager.damageUiIndicator(currentMonster[gameManager.getNextToAttack(currentMonster)].attack);
+                    } else {
                         al_draw_bitmap(playerBattleSprite, 800, 220, 0);
                     }
-                }
-                else{
+                } else {
                     al_draw_bitmap(playerBattleSprite, 800, 220, 0);
                 }
-                uiManager.playerInfoBackground(player.name, player.fullLife, player.life, commandsIndicies); //player background info
+                uiManager.playerInfoBackground(player.name, player.fullLife, player.life,
+                                               commandsIndicies); //player background info
                 uiManager.enemiesInfoBackground(currentMonster); //monsters background info
                 al_flip_display();
             }
@@ -363,7 +419,7 @@ int main() {
                                         // Player attack monster
                                         currentMonster[gameManager.getSelected(currentMonster)].hit(player.attack);
                                         player.justAttacked = true; // Player just attacked, so it is not it's turn
-                                        al_set_timer_count(fightTimer,  0);
+                                        al_set_timer_count(fightTimer, 0);
                                         previousTimeCount = (int) al_get_timer_count(fightTimer);
                                     }
                                     break;
@@ -375,12 +431,12 @@ int main() {
             }
 
             if (player.justAttacked) {
-                 if(al_get_timer_count(fightTimer) - previousTimeCount >= 8){
-                     player.justAttacked = false;
+                if (al_get_timer_count(fightTimer) - previousTimeCount >= 10) {
+                    player.justAttacked = false;
 
-                     player.hit(currentMonster[gameManager.getNextToAttack(currentMonster)].attack);
+                    player.hit(currentMonster[gameManager.getNextToAttack(currentMonster)].attack);
 
-                     gameManager.changeNextoToAttak(&currentMonster);
+                    gameManager.changeNextoToAttak(&currentMonster);
                 }
             }
 

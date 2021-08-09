@@ -24,7 +24,7 @@ public:
 
     vector<Monster> populateEnemies(){
         vector<Monster> vec;
-        for (int i = 0; i < 3; i++){ //(random() % 3) + 1
+        for (int i = 0; i < (random() % 3) + 1; i++){ //(random() % 3) + 1
             vec.emplace_back(Monster());
         }
         return vec;
@@ -62,8 +62,8 @@ public:
     void changeSelectedRight(vector<Monster> *currentMonster){
         if (currentMonster->size() == 2) {
             if (currentMonster->at(0).isSelected) {
-                currentMonster->at(0).isSelected = true;
-                currentMonster->at(1).isSelected = false;
+                currentMonster->at(0).isSelected = false;
+                currentMonster->at(1).isSelected = true;
             }
         }
         if (currentMonster->size() == 3) {

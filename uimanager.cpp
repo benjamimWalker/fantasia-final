@@ -74,6 +74,8 @@ public:
         x2 = (float) (life * 163) / (float) fullLife + (float) where.first;
         //Filled rect
         al_draw_filled_rounded_rectangle((float) where.first, (float) where.second, x2, (float) where.second + 14, 4.5, 4.5, playerLife);
+        //Numeric Indicator
+        lifeNumericIndicator(life);
     }
 
     void enemiesInfoBackground(const vector<Monster>& monsters) const {
@@ -117,7 +119,7 @@ public:
             if(i == 2){
                 float x2; //Second x coordinate for filled rectangle, for displaying current life
                 //Name
-                al_draw_text(font, silver, 480, 410, 0, monsters[i].name.c_str());
+               // al_draw_text(font, silver, 480, 410, 0, monsters[i].name.c_str());
                 //Unfilled rect
                 al_draw_rounded_rectangle(470, 450, 660, 464, 5, 5, silver, 2);
                 x2 = (float) (monsters[i].life * (660 - 470)) / (float) monsters[i].fullLife + 470;
@@ -127,6 +129,14 @@ public:
             if (monsterIndicatorLocation != 0)
             al_draw_filled_circle((float) monsterIndicatorLocation, 485, 12, red);
         }
+    }
+
+    void damageUiIndicator(int damage) const{
+        al_draw_text(font, al_map_rgb(255, 255, 255), 780, 350, 0, ("-" + to_string(damage) ).c_str());
+    }
+
+    void lifeNumericIndicator(int life) const{
+        al_draw_text(font, al_map_rgb(255, 255, 255), 780, 380, 0, to_string(life).c_str());
     }
 
     void clean() {
