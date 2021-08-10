@@ -20,7 +20,7 @@ using namespace std;
 
 
 //global gamemanager's static variables
-map<vector<Monster>, pair<int, int>> GameManager::enemiesLocalization;
+map<pair<int, int>, vector<Monster>> GameManager::enemiesLocalization;
 unsigned short GameManager::gameMode;
 unsigned short GameManager::numEnemies = 42; //The answer
 unsigned short GameManager::level = 1;
@@ -143,6 +143,7 @@ int main() {
                               (int) (windowHeight - playerSpriteWidth) - 2); //spreading monsters
     GameManager::gameMode = EXPLORING;
     vector<Monster> currentMonster; //Monsters loaded when entering in battle mode
+    pair<int, int> currentCoordinate;
 
     bool isOnBattle; //Set to true when an enemy is found
     float sXM1 = 0; //Location to start drawing the first monster image of the spritesheet
@@ -164,12 +165,12 @@ int main() {
             }
 
             // detects whether the player has found a monster and changes the game mode
-            if (gameManager.foundMonster(player, &currentMonster) and not player.exempted) {
+            if (gameManager.foundMonster(player, &currentCoordinate) and not player.exempted) {
                 GameManager::gameMode = FIGHTING; //boolean to enter the fight (battle) mode
                 audioManger.stopPlaying(generalMusic); //stopping the music
             }
-                //If player exit monster area he can find another
-            else if (not gameManager.foundMonster(player, &currentMonster)) {
+            //If player exit monster area he can find another
+            else if (not gameManager.foundMonster(player, &currentCoordinate)) {
                 player.exempted = false;
             }
             isOnBattle = true;
@@ -192,8 +193,8 @@ int main() {
 
                 // TODO [DEBUG DRAWING]
                 for (const auto &enemy: GameManager::enemiesLocalization) {
-                    for (auto monster: enemy.first) {
-                        al_draw_filled_circle(enemy.second.first, enemy.second.second, 13, al_map_rgb(255, 255, 255));
+                    for (auto monster: enemy.second) {
+                        al_draw_filled_circle(enemy.first.first, enemy.first.second, 13, al_map_rgb(255, 255, 255));
                     }
                 }
 
@@ -264,11 +265,11 @@ int main() {
             //Executed once when a monster is found
             if (isOnBattle) {
                 battleBitMapIndex = 1; //TODO COLOCAR O DA FASE CORRETA
-                currentMonster[0].isSelected = true;
-                currentMonster[0].isNextToAttack = true;
+                GameManager::enemiesLocalization[currentCoordinate][0].isSelected = true;
+                GameManager::enemiesLocalization[currentCoordinate][0].isNextToAttack = true;
                 //Load sprites for each monster found
-                for (auto &m : currentMonster) {
-                    m.prepareDrawing();
+                for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
+                    GameManager::enemiesLocalization[currentCoordinate][i].prepareDrawing();
                 }
             }
             al_draw_bitmap(battleBitmaps[battleBitMapIndex], 0.0, 0.0, 0); // Drawing the map for current phase
@@ -280,35 +281,35 @@ int main() {
                 //TODO descomentar essa parte no final
                 //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
                 running = false;
-                for (auto m: currentMonster) {
-                    m.clean();
+                for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
+                    GameManager::enemiesLocalization[currentCoordinate][i].clean();
                 }
                 uiManager.clean();
             }
             if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == fightTimer) {
                 // Drawing each one of the monster in this for loop
-                for (int i = 0; i < currentMonster.size(); i++) {
-                    auto width = (float) al_get_bitmap_width(currentMonster[i].bitmap);
-                    auto height = (float) al_get_bitmap_height(currentMonster[i].bitmap);
+                for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
+                    auto width = (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i].bitmap);
+                    auto height = (float) al_get_bitmap_height(GameManager::enemiesLocalization[currentCoordinate][i].bitmap);
                     if (i == 0) {
                         if (sXM1 >= (width - width / 3) - 1) sXM1 = 0;
                         else sXM1 += width / 3;
 
                         if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
-                            if (gameManager.getSelected(currentMonster) == i and not player.justFailedFleeing) {
-                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM1, 0, width / 3, height, 10, 200, 0);
+                            if (gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate]) == i and not player.justFailedFleeing) {
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, damageColor, sXM1, 0, width / 3, height, 10, 200, 0);
                             } else {
-                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
+                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
                             }
                         } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
                                    al_get_timer_count(fightTimer) - previousTimeCount < 8) {
-                            if (gameManager.getNextToAttack(currentMonster) == i) {
-                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, attackColor, sXM1, 0, width / 3, height, 10, 200, 0);
+                            if (gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate]) == i) {
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM1, 0, width / 3, height, 10, 200, 0);
                             } else {
-                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
+                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
                             }
                         } else {
-                            al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
+                            al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
                         }
 
                     } else if (i == 1) {
@@ -316,22 +317,22 @@ int main() {
                         else sXM2 += width / 3;
 
                         if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
-                            if (gameManager.getSelected(currentMonster) == i and not player.justFailedFleeing) {
-                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                            if (gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate]) == i and not player.justFailedFleeing) {
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, damageColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
                             } else {
-                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
                             }
                         }
 
                         else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
                             al_get_timer_count(fightTimer) - previousTimeCount < 8) {
-                            if (gameManager.getNextToAttack(currentMonster) == i) {
-                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, attackColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                            if (gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate]) == i) {
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
                             } else {
-                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
                             }
                         } else {
-                            al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
+                            al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
                         }
 
                     } else {
@@ -339,25 +340,27 @@ int main() {
                         else sXM3 += width / 3;
 
                         if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
-                            if (gameManager.getSelected(currentMonster) == i and not player.justFailedFleeing) {
-                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                            if (gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate]) == i and not player.justFailedFleeing) {
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, damageColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                             } else {
-                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                             }
                         }
 
                         else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
                         al_get_timer_count(fightTimer) - previousTimeCount < 8) {
-                            if (gameManager.getNextToAttack(currentMonster) == i) {
-                                al_draw_tinted_bitmap_region(currentMonster[i].bitmap, attackColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                            if (gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate]) == i) {
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                             } else {
-                                al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                             }
                         } else {
-                            al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
+                            al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                         }
                     }
                 } //Done drawing monster(s) for this frame
+
+                // Drawing player, if attacked, attacking or none
                 if (player.justAttacked) {
                     if (al_get_timer_count(fightTimer) - previousTimeCount <= 3 and not player.justFailedFleeing) {
                         al_draw_tinted_bitmap(playerBattleSprite, attackColor, 800, 220, 0); //Drawing player's sprite
@@ -365,7 +368,7 @@ int main() {
                                al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                         al_draw_tinted_bitmap(playerBattleSprite, damageColor, 800, 220, 0); //Drawing player's sprite
 
-                        uiManager.damageUiIndicator(currentMonster[gameManager.getNextToAttack(currentMonster)].attack);
+                        uiManager.damageUiIndicator(GameManager::enemiesLocalization[currentCoordinate][gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate])].attack);
                     } else {
                         al_draw_bitmap(playerBattleSprite, 800, 220, 0);
                     }
@@ -374,7 +377,7 @@ int main() {
                 }
                 uiManager.playerInfoBackground(player.name, player.fullLife, player.life,
                                                commandsIndicies); //player background info
-                uiManager.enemiesInfoBackground(currentMonster); //monsters background info
+                                               uiManager.enemiesInfoBackground(GameManager::enemiesLocalization[currentCoordinate]); //monsters background info
                 al_flip_display();
             }
             //Input by up, down, left and right keys
@@ -404,10 +407,10 @@ int main() {
                 }
                 //Monster switch with arrow keys
                 if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-                    gameManager.changeSelectedLeft(&currentMonster);
+                    gameManager.changeSelectedLeft(&GameManager::enemiesLocalization[currentCoordinate]);
                 }
                 if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-                    gameManager.changeSelectedRight(&currentMonster);
+                    gameManager.changeSelectedRight(&GameManager::enemiesLocalization[currentCoordinate]);
                 }
                 // Check if player entered an option
                 if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
@@ -418,7 +421,7 @@ int main() {
                                     // Check if it is player's turn
                                     if (not player.justAttacked) {
                                         // Player attack monster
-                                        currentMonster[gameManager.getSelected(currentMonster)].hit(player.attack);
+                                        GameManager::enemiesLocalization[currentCoordinate][gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate])].hit(player.attack);
                                         player.justAttacked = true; // Player just attacked, so it is not it's turn
                                         player.justFailedFleeing = false;
                                         al_set_timer_count(fightTimer, 0);
@@ -427,31 +430,32 @@ int main() {
                                     break;
                                 case ESPECIAL: // Check if the option is especial
                                     if(not player.justAttacked){
-                                        if (player.numberOfEspecialAttack > 0){
-                                            currentMonster[gameManager.getSelected(currentMonster)].hit(player.attack * 3);
+                                        if (player.numberOfEspecialAttack > 0){ // If player has an especial
+                                            // Hit with special attack
+                                            GameManager::enemiesLocalization[currentCoordinate][gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate])].hit(player.attack * 3);
                                             player.justAttacked = true; // Player just attacked, so it is not it's turn
                                             al_set_timer_count(fightTimer, 0);
                                             previousTimeCount = (int) al_get_timer_count(fightTimer);
-                                            player.numberOfEspecialAttack--;
-                                            cout << "Ataquei, agora tem " <<  player.numberOfEspecialAttack << endl;
-                                            player.justFailedFleeing = false;
+                                            player.numberOfEspecialAttack--; // Reduce number of especials
+                                            player.justFailedFleeing = false; //Player didn't failed
                                         }
                                     }
                                     break;
-                                case FLEE:
+                                case FLEE: //Check if the option is Flee
                                     int probabilidade = random() % 11;
-                                    cout << probabilidade << endl;
                                     // It seems it tends to generate bigger numbers, so I divided half to half
-                                    if(probabilidade > 5){
-                                        cout << "Aê clã!" << endl;
-                                        GameManager::gameMode = EXPLORING;
-                                        player.exempted = true;
-                                        audioManger.stopPlaying(battleMusic);
-                                        player.justFailedFleeing = false;
-                                        GameManager::enemiesLocalization.erase(currentMonster);
+                                    if(probabilidade > 5){ // Success
+                                        GameManager::gameMode = EXPLORING; //Back to exploring
+                                        player.exempted = true; //Now player can't find a monster
+                                        audioManger.stopPlaying(battleMusic); // Stop battle song
+                                        player.justFailedFleeing = false; // Did not fail
+                                        gameManager.deselectAll(&GameManager::enemiesLocalization[currentCoordinate]);
+                                        commandsIndicies[FLEE] = false;
+                                        commandsIndicies[ATTACK] = true;
+                                       // GameManager::enemiesLocalization.erase(currentCoordinate);
                                     }
-                                    else{
-                                        player.justAttacked = true;
+                                    else{ // Failed
+                                        player.justAttacked = true; // Just for player now be attacked next
                                         player.justFailedFleeing = true;
                                         al_set_timer_count(fightTimer, 0);
                                         previousTimeCount = (int) al_get_timer_count(fightTimer);
@@ -462,13 +466,13 @@ int main() {
                 }
             }
 
-            if (player.justAttacked) {
+            if (player.justAttacked) { // Condition for to the current monster to attack, well... Attack!
                 if (al_get_timer_count(fightTimer) - previousTimeCount >= 10) {
                     player.justAttacked = false;
 
-                    player.hit(currentMonster[gameManager.getNextToAttack(currentMonster)].attack);
+                    player.hit(GameManager::enemiesLocalization[currentCoordinate][gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate])].attack);
 
-                    gameManager.changeNextoToAttak(&currentMonster);
+                    gameManager.changeNextoToAttak(&GameManager::enemiesLocalization[currentCoordinate]);
                 }
             }
 

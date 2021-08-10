@@ -20,8 +20,9 @@ public:
     * it has a link between a vector with 1 to 3 monsters
     * and a random coordinate
     */
-    static map<vector<Monster>, pair<int, int>> enemiesLocalization;
+   static map<pair<int, int>, vector<Monster>> enemiesLocalization;
 
+   // Put Monsters on their place
     vector<Monster> populateEnemies(){
         vector<Monster> vec;
         for (int i = 0; i < (random() % 3) + 1; i++){ //(random() % 3) + 1
@@ -30,18 +31,20 @@ public:
         return vec;
     }
 
+    // Random coordinates for monsters
     void sortPositions(int width, int height){
         for (int j = 0; j < numEnemies; j++) {
             vector<Monster> v = populateEnemies();
            // srand (time (0));
-              enemiesLocalization.insert(pair<vector<Monster>, pair<int, int>> (v, pair<int, int>(random() % width, random() % height)));
+           enemiesLocalization.insert(pair<pair<int, int>, vector<Monster>> (pair<int, int>(random() % width, random() % height), v));
         }
     }
 
-     bool foundMonster(const Player& p, vector<Monster>  *monsters) {
+    //Check if player is in a monster area and set the current coordinate
+    bool foundMonster(const Player& p, pair<int, int>  *coordinates) {
         for (auto &enemy : enemiesLocalization) {
-            if (p.distanceOf(enemy.second.first, enemy.second.second) < 16) {
-                *monsters = enemy.first;
+            if (p.distanceOf(enemy.first.first, enemy.first.second) < 16) {
+                *coordinates = enemy.first;
                 return true;
             }
         }
@@ -49,7 +52,7 @@ public:
          return false;
     }
 //
-//    void uptadeEnemiesLocalization(vector<Monster> monster){
+//    void updateEnemiesLocalization(vector<Monster> monster){
 //
 //    }
     /*
@@ -59,6 +62,15 @@ public:
         for (int i = 0; i < currentMonster.size(); i++) {
             if (currentMonster[i].isSelected) {
                 return i;
+            }
+        }
+    }
+
+    // Deselect all monsters
+    void deselectAll(vector<Monster> *currentMonster){
+        for (int i = 0; i < currentMonster->size(); i++) {
+            if (currentMonster->at(i).isSelected) {
+                currentMonster->at(i).isSelected = false;
             }
         }
     }

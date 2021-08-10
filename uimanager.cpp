@@ -11,6 +11,7 @@ using namespace std;
 class UIManager {
 
 public:
+    // Fonts and colors
     ALLEGRO_FONT *font;
     ALLEGRO_COLOR green;
     ALLEGRO_COLOR red;
@@ -30,6 +31,7 @@ public:
         yellow = al_map_rgb(247, 229, 126);
         playerLife = green;
     }
+
 
     void drawLifebar() {
         al_draw_rounded_rectangle(200, 234, 350, 245, 4, 4, al_map_rgb(255, 255, 255), 2);
@@ -78,6 +80,7 @@ public:
         // lifeNumericIndicator(life);
     }
 
+    //Display information about monsters in the battle
     void enemiesInfoBackground(const vector<Monster>& monsters) const {
         int monsterIndicatorLocation = 0;
         //Background
@@ -131,14 +134,17 @@ public:
         }
     }
 
+    //Show in text the damage made by a monster in player
     void damageUiIndicator(int damage) const{
         al_draw_text(font, al_map_rgb(255, 255, 255), 780, 350, 0, ("-" + to_string(damage) ).c_str());
     }
 
+    // Show the player's life in numbers
     void lifeNumericIndicator(int life) const{
         al_draw_text(font, al_map_rgb(255, 255, 255), 780, 380, 0, to_string(life).c_str());
     }
 
+    // The name is enough for understanding
     void clean() {
         al_destroy_font(font);
     }
