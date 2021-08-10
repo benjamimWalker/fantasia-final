@@ -25,9 +25,11 @@ public:
     float individualSpriteY;
     bool alive = true;
     bool exempted = false;
+    bool justFailedFleeing = false;
     int width;
     int height;
     bool justAttacked = false;
+    int numberOfEspecialAttack = 4;
     float x = 40, y = 40; //coordinates for drawing each image of the player
 
      Player(int pLife, int pPoints, float pMoveSpeed, string pName){

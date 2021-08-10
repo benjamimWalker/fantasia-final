@@ -74,8 +74,8 @@ public:
         x2 = (float) (life * 163) / (float) fullLife + (float) where.first;
         //Filled rect
         al_draw_filled_rounded_rectangle((float) where.first, (float) where.second, x2, (float) where.second + 14, 4.5, 4.5, playerLife);
-        //Numeric Indicator
-        lifeNumericIndicator(life);
+        // [DEBUG] SHOW LIFE IN NUMBERS
+        // lifeNumericIndicator(life);
     }
 
     void enemiesInfoBackground(const vector<Monster>& monsters) const {

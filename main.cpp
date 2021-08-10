@@ -295,7 +295,7 @@ int main() {
                         else sXM1 += width / 3;
 
                         if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
-                            if (gameManager.getSelected(currentMonster) == i) {
+                            if (gameManager.getSelected(currentMonster) == i and not player.justFailedFleeing) {
                                 al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM1, 0, width / 3, height, 10, 200, 0);
                             } else {
                                 al_draw_bitmap_region(currentMonster[i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
@@ -316,7 +316,7 @@ int main() {
                         else sXM2 += width / 3;
 
                         if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
-                            if (gameManager.getSelected(currentMonster) == i) {
+                            if (gameManager.getSelected(currentMonster) == i and not player.justFailedFleeing) {
                                 al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
                             } else {
                                 al_draw_bitmap_region(currentMonster[i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3, 200, 0);
@@ -339,7 +339,7 @@ int main() {
                         else sXM3 += width / 3;
 
                         if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
-                            if (gameManager.getSelected(currentMonster) == i) {
+                            if (gameManager.getSelected(currentMonster) == i and not player.justFailedFleeing) {
                                 al_draw_tinted_bitmap_region(currentMonster[i].bitmap, damageColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
                             } else {
                                 al_draw_bitmap_region(currentMonster[i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(currentMonster[i - 1].bitmap) / 3 +(float) al_get_bitmap_width(currentMonster[i - 2].bitmap) / 3, 200, 0);
@@ -359,11 +359,12 @@ int main() {
                     }
                 } //Done drawing monster(s) for this frame
                 if (player.justAttacked) {
-                    if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
+                    if (al_get_timer_count(fightTimer) - previousTimeCount <= 3 and not player.justFailedFleeing) {
                         al_draw_tinted_bitmap(playerBattleSprite, attackColor, 800, 220, 0); //Drawing player's sprite
                     } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
                                al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                         al_draw_tinted_bitmap(playerBattleSprite, damageColor, 800, 220, 0); //Drawing player's sprite
+
                         uiManager.damageUiIndicator(currentMonster[gameManager.getNextToAttack(currentMonster)].attack);
                     } else {
                         al_draw_bitmap(playerBattleSprite, 800, 220, 0);
@@ -419,14 +420,45 @@ int main() {
                                         // Player attack monster
                                         currentMonster[gameManager.getSelected(currentMonster)].hit(player.attack);
                                         player.justAttacked = true; // Player just attacked, so it is not it's turn
+                                        player.justFailedFleeing = false;
                                         al_set_timer_count(fightTimer, 0);
                                         previousTimeCount = (int) al_get_timer_count(fightTimer);
                                     }
                                     break;
+                                case ESPECIAL: // Check if the option is especial
+                                    if(not player.justAttacked){
+                                        if (player.numberOfEspecialAttack > 0){
+                                            currentMonster[gameManager.getSelected(currentMonster)].hit(player.attack * 3);
+                                            player.justAttacked = true; // Player just attacked, so it is not it's turn
+                                            al_set_timer_count(fightTimer, 0);
+                                            previousTimeCount = (int) al_get_timer_count(fightTimer);
+                                            player.numberOfEspecialAttack--;
+                                            cout << "Ataquei, agora tem " <<  player.numberOfEspecialAttack << endl;
+                                            player.justFailedFleeing = false;
+                                        }
+                                    }
+                                    break;
+                                case FLEE:
+                                    int probabilidade = random() % 11;
+                                    cout << probabilidade << endl;
+                                    // It seems it tends to generate bigger numbers, so I divided half to half
+                                    if(probabilidade > 5){
+                                        cout << "Aê clã!" << endl;
+                                        GameManager::gameMode = EXPLORING;
+                                        player.exempted = true;
+                                        audioManger.stopPlaying(battleMusic);
+                                        player.justFailedFleeing = false;
+                                        GameManager::enemiesLocalization.erase(currentMonster);
+                                    }
+                                    else{
+                                        player.justAttacked = true;
+                                        player.justFailedFleeing = true;
+                                        al_set_timer_count(fightTimer, 0);
+                                        previousTimeCount = (int) al_get_timer_count(fightTimer);
+                                    }
                             }
                         }
                     }
-
                 }
             }
 
