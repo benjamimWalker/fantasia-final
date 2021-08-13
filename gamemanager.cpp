@@ -160,6 +160,36 @@ public:
             }
         }
     }
+
+    bool battleStateUpdate(vector<Monster> *currentMonster, Player *player, pair<int, int> *currentCoordinate){
+
+        // ALL MONSTERS DIED
+        if(currentMonster->empty()){
+            player->exempted = true;
+            player->points += 10; // TODO Give the player his points for defeating all monsters;
+            enemiesLocalization.erase(*currentCoordinate);
+            gameMode = 0;
+            return true;
+        }
+
+
+        for (int i = 0; i < currentMonster->size(); i++) {
+            // ONE MONSTER DIED
+            if(not currentMonster->at(i).alive){
+                currentMonster->erase(currentMonster->begin() + i);
+            }
+        }
+
+        // Player Died
+        if(not player->alive){
+            //TODO JANELA DE PERDEU PLAYBOY
+        }
+        return false;
+    }
+
+    void exploringStateUpdate(){
+        //TODO CAREFUL WITH LEVELS!! THIS IS FOR PASSING THEN
+    }
 };
 
 

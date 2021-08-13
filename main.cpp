@@ -161,7 +161,7 @@ int main() {
         if (GameManager::gameMode == EXPLORING) {
             //playing the themesong
             if (!audioManger.isPlaying) {
-                generalMusic = audioManger.playLoop(generalID);
+               generalMusic = audioManger.playLoop(generalID);
             }
 
             // detects whether the player has found a monster and changes the game mode
@@ -474,6 +474,10 @@ int main() {
 
                     gameManager.changeNextoToAttak(&GameManager::enemiesLocalization[currentCoordinate]);
                 }
+            }
+
+            if(gameManager.battleStateUpdate(&GameManager::enemiesLocalization[currentCoordinate], &player, &currentCoordinate)){
+                audioManger.stopPlaying(battleMusic); // Stop battle song
             }
 
 //            GameManager::gameMode = EXPLORING;
