@@ -6,18 +6,36 @@ class AudioManger{
 
 public:
     bool isPlaying = false;
+    bool isPlayingOnce = false;
 private:
     string prologue = "../assets/audios/músicas/prologue.ogg";
     string geral = "../assets/audios/músicas/geral.ogg";
     string battle = "../assets/audios/músicas/batalha.ogg";
     string victory = "../assets/audios/músicas/vitoria.ogg";
+    string alan_hurt = "../assets/audios/efeitos/alan_hurt.ogg";
+    string ada_hurt = "../assets/audios/efeitos/ada_hurt.ogg";
+    string monster_hurt = "../assets/audios/efeitos/monster_hurt.ogg";
+
     public:
 
-    void playOnce(const string& efecct){
+    void playOnce(const string& effect, const string& playerName){
         string sampleToPlay;
+        if(effect == "hurt"){
+            if(playerName == "ada"){
+                sampleToPlay = ada_hurt;
+            }
+            else{
+                sampleToPlay = alan_hurt;
+            }
+        };
+
+        if (effect == "m_hurt"){
+            sampleToPlay = monster_hurt;
+        }
         ALLEGRO_SAMPLE *pr = al_load_sample(sampleToPlay.c_str());
-        al_reserve_samples(1);
-        al_play_sample(pr, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
+        al_reserve_samples(2);
+        al_play_sample(pr, 0.3, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
+        cout << "toco" << endl;
     }
 
     //Receives a level number, plays the corresponding song and return its sample
@@ -38,8 +56,8 @@ private:
                 break;
         }
         ALLEGRO_SAMPLE *pr = al_load_sample(sampleToPlay.c_str());
-        al_reserve_samples(1);
-        al_play_sample(pr, 0.5, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, nullptr);
+        al_reserve_samples(2);
+        al_play_sample(pr, 0.06, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, nullptr);
         isPlaying = true;
         return pr;
     }

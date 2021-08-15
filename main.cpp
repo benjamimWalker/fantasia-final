@@ -99,7 +99,7 @@ int main() {
     al_init_primitives_addon();
 
     // creating the instance of the audio manager
-    AudioManger audioManger;
+    AudioManger audioManager;
 
     // creating the instance of the game manager
     GameManager gameManager;
@@ -108,7 +108,7 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(70, 0, 1.2, "ada");
+    Player player = Player(70, 0, 1.2, "alan");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -130,8 +130,8 @@ int main() {
 
     adaDeathScreen = al_load_bitmap("../assets/sprites/ada_death.png");
     adaWinScreen = al_load_bitmap("../assets/sprites/ada_victory.png");
-    alanDeathScreen = al_load_bitmap("../assets/sprites/ada_death.png");
-    alanWinScreen = al_load_bitmap("../assets/sprites/ada_victory.png");
+    alanDeathScreen = al_load_bitmap("../assets/sprites/alan_death.png");
+    alanWinScreen = al_load_bitmap("../assets/sprites/alan_victory.png");
 
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
@@ -166,17 +166,16 @@ int main() {
     // main loop
     while (running) {
         int battleBitMapIndex; //Index for the battleBitMapArray which will be a random number
-
         if (GameManager::gameMode == EXPLORING) {
             //playing the themesong
-            if (!audioManger.isPlaying) {
-               generalMusic = audioManger.playLoop(generalID);
+            if (!audioManager.isPlaying) {
+               generalMusic = audioManager.playLoop(generalID);
             }
 
             // detects whether the player has found a monster and changes the game mode
             if (gameManager.foundMonster(player, &currentCoordinate) and not player.exempted) {
                 GameManager::gameMode = FIGHTING; //boolean to enter the fight (battle) mode
-                audioManger.stopPlaying(generalMusic); //stopping the music
+                audioManager.stopPlaying(generalMusic); //stopping the music
             }
             //If player exit monster area he can find another
             else if (not gameManager.foundMonster(player, &currentCoordinate)) {
@@ -282,8 +281,8 @@ int main() {
              * */
 
             //playing the theme song of the battle
-            if (!audioManger.isPlaying) {
-                battleMusic = audioManger.playLoop(battleId);
+            if (!audioManager.isPlaying) {
+                battleMusic = audioManager.playLoop(battleId);
             }
 
             //Executed once when a monster is found
@@ -444,6 +443,7 @@ int main() {
                                 case ATTACK: // Check if the option is attack
                                     // Check if it is player's turn
                                     if (not player.justAttacked) {
+                                        audioManager.playOnce("m_hurt", "");
                                         // Player attack monster
                                         GameManager::enemiesLocalization[currentCoordinate][gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate])].hit(player.attack);
                                         player.justAttacked = true; // Player just attacked, so it is not it's turn
@@ -455,6 +455,7 @@ int main() {
                                 case ESPECIAL: // Check if the option is especial
                                     if(not player.justAttacked){
                                         if (player.numberOfEspecialAttack > 0){ // If player has an especial
+                                            audioManager.playOnce("m_hurt", "");
                                             // Hit with special attack
                                             GameManager::enemiesLocalization[currentCoordinate][gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate])].hit(player.attack * 3);
                                             player.justAttacked = true; // Player just attacked, so it is not it's turn
@@ -471,7 +472,7 @@ int main() {
                                     if(probabilidade > 5){ // Success
                                         GameManager::gameMode = EXPLORING; //Back to exploring
                                         player.exempted = true; //Now player can't find a monster
-                                        audioManger.stopPlaying(battleMusic); // Stop battle song
+                                        audioManager.stopPlaying(battleMusic); // Stop battle song
                                         player.justFailedFleeing = false; // Did not fail
                                         gameManager.deselectAll(&GameManager::enemiesLocalization[currentCoordinate]);
                                         for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
@@ -494,6 +495,12 @@ int main() {
             }
 
             if (player.justAttacked) { // Condition for to the current monster to attack, well... Attack!
+
+                // Play damage
+                if (al_get_timer_count(fightTimer) - previousTimeCount >= 5 and al_get_timer_count(fightTimer) - previousTimeCount < 6)
+                    audioManager.playOnce("hurt", player.name);
+
+
                 if (al_get_timer_count(fightTimer) - previousTimeCount >= 10) {
                     player.justAttacked = false;
 
@@ -507,7 +514,7 @@ int main() {
 
             // Player killed all monsters
             if(battleStateUpdate == 1){
-                audioManger.stopPlaying(battleMusic); // Stop battle song
+                audioManager.stopPlaying(battleMusic); // Stop battle song
             }
 
             // Player dead
@@ -537,7 +544,7 @@ int main() {
         }
     }
 
-    audioManger.stopPlaying(battleMusic); // só pra não acabar com minha ram
+    audioManager.stopPlaying(battleMusic); // só pra não acabar com minha ram
     // Cleaning garbage
     al_destroy_display(display);
     al_uninstall_keyboard();
