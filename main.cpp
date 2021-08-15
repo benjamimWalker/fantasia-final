@@ -49,6 +49,10 @@ int main() {
     ALLEGRO_TIMER *fightTimer;
     ALLEGRO_SAMPLE *generalMusic;
     ALLEGRO_SAMPLE *battleMusic;
+    ALLEGRO_BITMAP *adaDeathScreen;
+    ALLEGRO_BITMAP *adaWinScreen;
+    ALLEGRO_BITMAP *alanDeathScreen;
+    ALLEGRO_BITMAP *alanWinScreen;
 
     const unsigned short windowWidth = 919;
     const unsigned short windowHeight = 517; //window properties
@@ -124,6 +128,11 @@ int main() {
     battleBitmaps[1] = al_load_bitmap("../assets/sprites/maps/battlemap2.png");
     battleBitmaps[2] = al_load_bitmap("../assets/sprites/maps/battlemap3.png");
 
+    adaDeathScreen = al_load_bitmap("../assets/sprites/ada_death.png");
+    adaWinScreen = al_load_bitmap("../assets/sprites/ada_victory.png");
+    alanDeathScreen = al_load_bitmap("../assets/sprites/ada_death.png");
+    alanWinScreen = al_load_bitmap("../assets/sprites/ada_victory.png");
+
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
     int direction; //range from zero to four for changing the image's direction
@@ -175,8 +184,23 @@ int main() {
             }
             isOnBattle = true;
             al_draw_bitmap(map1, 0.0, 0.0, 0);
-            if (player.foundChest())
+            if (player.foundChest()){
                 al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+                al_flip_display();
+                al_rest(0.75);
+                if(player.name == "alan"){
+                    al_draw_bitmap(alanWinScreen, 0, 0, 0);
+                    al_flip_display();
+                    al_rest(4);
+                    running = false;
+                }
+                else{
+                    al_draw_bitmap(adaWinScreen, 0, 0, 0);
+                    al_flip_display();
+                    al_rest(4);
+                    running = false;
+                }
+            }
             else
                 al_draw_bitmap(chest1, windowWidth - 63, 8, 0);
             ALLEGRO_EVENT event;
@@ -436,8 +460,8 @@ int main() {
                                             player.justAttacked = true; // Player just attacked, so it is not it's turn
                                             al_set_timer_count(fightTimer, 0);
                                             previousTimeCount = (int) al_get_timer_count(fightTimer);
-                                            player.numberOfEspecialAttack--; // Reduce number of especials
-                                            player.justFailedFleeing = false; //Player didn't failed
+                                            player.numberOfEspecialAttack--; // Reduce number of especial
+                                            player.justFailedFleeing = false; //Player didn't fail
                                         }
                                     }
                                     break;
@@ -450,6 +474,9 @@ int main() {
                                         audioManger.stopPlaying(battleMusic); // Stop battle song
                                         player.justFailedFleeing = false; // Did not fail
                                         gameManager.deselectAll(&GameManager::enemiesLocalization[currentCoordinate]);
+                                        for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
+                                            GameManager::enemiesLocalization[currentCoordinate][i].clean();
+                                        }
                                         commandsIndicies[FLEE] = false;
                                         commandsIndicies[ATTACK] = true;
                                        // GameManager::enemiesLocalization.erase(currentCoordinate);
@@ -476,9 +503,32 @@ int main() {
                 }
             }
 
-            if(gameManager.battleStateUpdate(&GameManager::enemiesLocalization[currentCoordinate], &player, &currentCoordinate)){
+            int battleStateUpdate = gameManager.battleStateUpdate(&GameManager::enemiesLocalization[currentCoordinate], &player, &currentCoordinate);
+
+            // Player killed all monsters
+            if(battleStateUpdate == 1){
                 audioManger.stopPlaying(battleMusic); // Stop battle song
             }
+
+            // Player dead
+            else if (battleStateUpdate == 2){
+                if(player.name == "alan"){
+                    al_draw_bitmap(alanDeathScreen, 0, 0, 0);
+                    al_flip_display();
+                    al_rest(3);
+                    running = false;
+                }
+                else{
+                    al_draw_bitmap(adaDeathScreen, 0, 0, 0);
+                    al_flip_display();
+                    al_rest(3);
+                    running = false;
+                }
+            }
+            else{
+
+            }
+
 
 //            GameManager::gameMode = EXPLORING;
 //          player.exempted = true;

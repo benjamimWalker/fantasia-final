@@ -103,6 +103,9 @@ public:
                 currentMonster->at(0).isSelected = true;
                 currentMonster->at(1).isSelected = false;
             }
+            else{
+                throw logic_error("Can't go to the left");
+            }
         }
         if (currentMonster->size() == 3) {
             if (currentMonster->at(1).isSelected) {
@@ -113,6 +116,9 @@ public:
                 currentMonster->at(0).isSelected = false;
                 currentMonster->at(1).isSelected = true;
                 currentMonster->at(2).isSelected = false;
+            }
+            else{
+                throw logic_error("Can't go to the left");
             }
         }
     }
@@ -161,7 +167,13 @@ public:
         }
     }
 
-    bool battleStateUpdate(vector<Monster> *currentMonster, Player *player, pair<int, int> *currentCoordinate){
+    // Do certain actions based on state of the battle
+    int battleStateUpdate(vector<Monster> *currentMonster, Player *player, pair<int, int> *currentCoordinate){
+
+        // Player Died
+        if(not player->alive){
+            return 2;
+        }
 
         // ALL MONSTERS DIED
         if(currentMonster->empty()){
@@ -176,14 +188,19 @@ public:
         for (int i = 0; i < currentMonster->size(); i++) {
             // ONE MONSTER DIED
             if(not currentMonster->at(i).alive){
-                currentMonster->erase(currentMonster->begin() + i);
+
+                // Select other monster to attack
+                try{
+                    changeSelectedLeft(currentMonster);
+                }
+                catch(logic_error &logicError){
+                    changeSelectedRight(currentMonster);
+                }
+                currentMonster->at(i).clean(); // Clean bitmap
+                currentMonster->erase(currentMonster->begin() + i); // Erase monster
             }
         }
 
-        // Player Died
-        if(not player->alive){
-            //TODO JANELA DE PERDEU PLAYBOY
-        }
         return false;
     }
 
@@ -191,21 +208,3 @@ public:
         //TODO CAREFUL WITH LEVELS!! THIS IS FOR PASSING THEN
     }
 };
-
-
-//map<vector<Monster>, pair<int, int>> GameManager::enemiesLocalization;
-//unsigned short GameManager::numEnemies = 10;
-//int main(){
-//    srand (time (0));
-//    GameManager gameManager;
-//
-//    gameManager.sortPositions(1280, 720);
-//
-//    for(const auto& enemy: GameManager::enemiesLocalization){
-//        for (auto monster: enemy.first){
-//            cout << monster.spritePath << " " << enemy.second.first << " " << enemy.second.second << endl;
-//        }
-//        cout << endl;
-//    }
-//    return 0;
-//}
