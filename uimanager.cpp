@@ -13,22 +13,28 @@ class UIManager {
 public:
     // Fonts and colors
     ALLEGRO_FONT *font;
+    ALLEGRO_FONT *scoreFont;
     ALLEGRO_COLOR green;
     ALLEGRO_COLOR red;
     ALLEGRO_COLOR silver;
     ALLEGRO_COLOR orange;
     ALLEGRO_COLOR yellow;
     ALLEGRO_COLOR playerLife;
+    ALLEGRO_COLOR rose;
+    ALLEGRO_COLOR white;
 
     void prepareUI() {
         al_init_font_addon();
         al_init_ttf_addon();
         font = al_load_font("../assets/fonts/quicksand.ttf", 18, 0);
+        scoreFont = al_load_font("../assets/fonts/quicksand.ttf", 38, 0);
         green =  al_map_rgb(146, 247, 99);
         red   =  al_map_rgb(237, 89, 52);
         silver = al_map_rgb(166, 185, 186);
         orange = al_map_rgb(232, 146, 65);
         yellow = al_map_rgb(247, 229, 126);
+        white = al_map_rgb(255, 255, 255);
+        rose = al_map_rgb(241, 221, 207);
         playerLife = green;
     }
 
@@ -147,5 +153,13 @@ public:
     // The name is enough for understanding
     void clean() {
         al_destroy_font(font);
+    }
+
+    void scoreUI(int score){
+        al_draw_text(scoreFont, rose, 750, 258, 0, to_string(score).c_str());
+    }
+
+    void recordUI(int score){
+        al_draw_text(scoreFont, rose, 750, 307, 0, to_string(score).c_str());
     }
 };

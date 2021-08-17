@@ -18,8 +18,7 @@
 
 using namespace std;
 
-
-//global gamemanager's static variables
+//global game manager static variables
 map<pair<int, int>, vector<Monster>> GameManager::enemiesLocalization;
 u_short GameManager::gameMode;
 u_short GameManager::numEnemies = 42; //The answer
@@ -113,7 +112,7 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(7, 0, 1.2, "alan");
+    Player player = Player(50, 0, 1.2, "alan");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -191,17 +190,25 @@ int main() {
             isOnBattle = true;
             al_draw_bitmap(map1, 0.0, 0.0, 0);
             if (player.foundChest()){
+                if(audioManager.isPlaying and audioManager.whatIsNowPlaying() == "geral") {
+                    audioManager.stopPlaying(generalMusic);
+                    audioManager.playLoop(victoryId);
+                }
                 al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
                 al_flip_display();
                 al_rest(0.75);
                 if(player.name == "alan"){
+                    // TODO MOSTRAR RECORD TAMBÉM
                     al_draw_bitmap(alanWinScreen, 0, 0, 0);
+                    uiManager.scoreUI(player.points);
                     al_flip_display();
                     al_rest(4);
                     running = false;
                 }
                 else{
                     al_draw_bitmap(adaWinScreen, 0, 0, 0);
+                    // TODO MOSTRAR RECORD TAMBÉM
+                    uiManager.scoreUI(player.points);
                     al_flip_display();
                     al_rest(4);
                     running = false;
@@ -533,7 +540,6 @@ int main() {
             else if (battleStateUpdate == 2){
 
                 if(audioManager.isPlaying and audioManager.whatIsNowPlaying() == "battle") {
-                    printf("entro \n");
                     audioManager.stopPlaying(battleMusic);
                     audioManager.playLoop(loseId);
                 }

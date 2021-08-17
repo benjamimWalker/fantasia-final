@@ -37,7 +37,6 @@ private:
         ALLEGRO_SAMPLE *pr = al_load_sample(sampleToPlay.c_str());
         al_reserve_samples(2);
         al_play_sample(pr, 0.3, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
-        cout << "toco" << endl;
     }
 
     //Receives a level number, plays the corresponding song and return its sample
