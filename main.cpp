@@ -112,7 +112,7 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(50, 0, 1.2, "alan");
+    Player player = Player(85, 0, 1.2, "ada");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -175,7 +175,7 @@ int main() {
         if (GameManager::gameMode == EXPLORING) {
             //playing the themesong
             if (!audioManager.isPlaying) {
-               generalMusic = audioManager.playLoop(generalID);
+                generalMusic = audioManager.playLoop(generalID);
             }
 
             // detects whether the player has found a monster and changes the game mode
@@ -183,39 +183,100 @@ int main() {
                 GameManager::gameMode = FIGHTING; //boolean to enter the fight (battle) mode
                 audioManager.stopPlaying(generalMusic); //stopping the music
             }
-            //If player exit monster area he can find another
+                //If player exit monster area he can find another
             else if (not gameManager.foundMonster(player, &currentCoordinate)) {
                 player.exempted = false;
             }
             isOnBattle = true;
-            al_draw_bitmap(map1, 0.0, 0.0, 0);
-            if (player.foundChest()){
-                if(audioManager.isPlaying and audioManager.whatIsNowPlaying() == "geral") {
-                    audioManager.stopPlaying(generalMusic);
-                    audioManager.playLoop(victoryId);
-                }
-                al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
-                al_flip_display();
-                al_rest(0.75);
-                if(player.name == "alan"){
-                    // TODO MOSTRAR RECORD TAMBÉM
-                    al_draw_bitmap(alanWinScreen, 0, 0, 0);
-                    uiManager.scoreUI(player.points);
-                    al_flip_display();
-                    al_rest(4);
-                    running = false;
-                }
-                else{
-                    al_draw_bitmap(adaWinScreen, 0, 0, 0);
-                    // TODO MOSTRAR RECORD TAMBÉM
-                    uiManager.scoreUI(player.points);
-                    al_flip_display();
-                    al_rest(4);
-                    running = false;
-                }
+            switch (GameManager::level) {
+                case 1:
+                    al_draw_bitmap(map1, 0.0, 0.0, 0);
+                    break;
+                case 2:
+                    al_draw_bitmap(map2, 0.0, 0.0, 0);
+                    break;
+                case 3:
+                    al_draw_bitmap(map3, 0.0, 0.0, 0);
+                    break;
             }
-            else
-                al_draw_bitmap(chest1, windowWidth - 63, 8, 0);
+
+            // Play victory song
+            if (player.foundChest()) {
+
+                //Recover life
+                player.life = player.fullLife;
+                GameManager::enemiesLocalization.clear();
+                gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2,
+                                          (int) (windowHeight - playerSpriteWidth) - 2);
+                if (GameManager::level == 3) {
+                    //Aqui ganhou de verdade
+                    if (audioManager.isPlaying and audioManager.whatIsNowPlaying() == "geral") {
+                        audioManager.stopPlaying(generalMusic);
+                        audioManager.playLoop(victoryId);
+
+                        switch (GameManager::level) {
+                            case 1:
+                                al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+                                break;
+                            case 2:
+                                al_draw_tinted_bitmap(chest2, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+                                break;
+                            case 3:
+                                al_draw_tinted_bitmap(chest3, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+                                break;
+                        }
+
+                        al_flip_display();
+                        al_rest(0.75);
+                        if (player.name == "alan") {
+                            // TODO MOSTRAR RECORD TAMBÉM
+                            al_draw_bitmap(alanWinScreen, 0, 0, 0);
+                            uiManager.scoreUI(player.points);
+                            al_flip_display();
+                            al_rest(4);
+                            running = false;
+                        } else {
+                            al_draw_bitmap(adaWinScreen, 0, 0, 0);
+                            // TODO MOSTRAR RECORD TAMBÉM
+                            uiManager.scoreUI(player.points);
+                            al_flip_display();
+                            al_rest(4);
+                            running = false;
+                        }
+                    }
+                }
+                if (GameManager::level == 2) GameManager::level = 3;
+                if(GameManager::level == 1) GameManager::level = 2;
+                player.x = 20;
+                player.y = windowHeight - 25;
+                switch (GameManager::level) {
+                    case 1:
+                        al_draw_tinted_bitmap(chest1, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+                        break;
+                    case 2:
+                        al_draw_tinted_bitmap(chest2, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+                        break;
+                    case 3:
+                        al_draw_tinted_bitmap(chest3, al_map_rgb(168, 118, 204), windowWidth - 63, 8, 0);
+                        break;
+                }
+
+                al_flip_display();
+                al_rest(0.35);
+
+            } else
+                switch (GameManager::level) {
+                    case 1:
+                        al_draw_bitmap(chest1, windowWidth - 63, 8, 0);
+                        break;
+                    case 2:
+                        al_draw_bitmap(chest2, windowWidth - 63, 8, 0);
+                        break;
+                    case 3:
+                        al_draw_bitmap(chest3, windowWidth - 63, 8, 0);
+                        break;
+                }
+
             ALLEGRO_EVENT event;
             al_wait_for_event(eventQueue, &event);
 
@@ -301,7 +362,7 @@ int main() {
 
             //Executed once when a monster is found
             if (isOnBattle) {
-                battleBitMapIndex = 1; //TODO COLOCAR O DA FASE CORRETA
+                battleBitMapIndex = GameManager::level - 1;
                 GameManager::enemiesLocalization[currentCoordinate][0].isSelected = true;
                 GameManager::enemiesLocalization[currentCoordinate][0].isNextToAttack = true;
                 //Load sprites for each monster found
@@ -359,10 +420,8 @@ int main() {
                             } else {
                                 al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
                             }
-                        }
-
-                        else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
-                            al_get_timer_count(fightTimer) - previousTimeCount < 8) {
+                        } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
+                                   al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                             if (gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate]) == i) {
                                 al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
                             } else {
@@ -378,21 +437,24 @@ int main() {
 
                         if (al_get_timer_count(fightTimer) - previousTimeCount <= 3) {
                             if (gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate]) == i and not player.justFailedFleeing) {
-                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, damageColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, damageColor, sXM3, 0, width / 3, height,
+                                                             40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                             } else {
-                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
+                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,
+                                                      40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                             }
-                        }
-
-                        else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
-                        al_get_timer_count(fightTimer) - previousTimeCount < 8) {
+                        } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
+                                   al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                             if (gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate]) == i) {
-                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM3, 0, width / 3, height,
+                                                             40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                             } else {
-                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
+                                al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,
+                                                      40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                             }
                         } else {
-                            al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 +(float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
+                            al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,
+                                                  40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                         }
                     }
                 } //Done drawing monster(s) for this frame
@@ -414,7 +476,7 @@ int main() {
                 }
                 uiManager.playerInfoBackground(player.name, player.fullLife, player.life,
                                                commandsIndicies); //player background info
-                                               uiManager.enemiesInfoBackground(GameManager::enemiesLocalization[currentCoordinate]); //monsters background info
+                uiManager.enemiesInfoBackground(GameManager::enemiesLocalization[currentCoordinate]); //monsters background info
                 al_flip_display();
             }
             //Input by up, down, left and right keys
@@ -444,10 +506,10 @@ int main() {
                 }
                 //Monster switch with arrow keys
                 if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-                    try{
+                    try {
                         gameManager.changeSelectedLeft(&GameManager::enemiesLocalization[currentCoordinate]);
                     }
-                    catch (logic_error &error){
+                    catch (logic_error &error) {
 
                     }
                 }
@@ -472,8 +534,8 @@ int main() {
                                     }
                                     break;
                                 case ESPECIAL: // Check if the option is especial
-                                    if(not player.justAttacked){
-                                        if (player.numberOfEspecialAttack > 0){ // If player has an especial
+                                    if (not player.justAttacked) {
+                                        if (player.numberOfEspecialAttack > 0) { // If player has an especial
                                             audioManager.playOnce("m_hurt", "");
                                             // Hit with special attack
                                             GameManager::enemiesLocalization[currentCoordinate][gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate])].hit(player.attack * 3);
@@ -488,7 +550,7 @@ int main() {
                                 case FLEE: //Check if the option is Flee
                                     int probabilidade = random() % 11;
                                     // It seems it tends to generate bigger numbers, so I divided half to half
-                                    if(probabilidade > 5){ // Success
+                                    if (probabilidade > 5) { // Success
                                         GameManager::gameMode = EXPLORING; //Back to exploring
                                         player.exempted = true; //Now player can't find a monster
                                         audioManager.stopPlaying(battleMusic); // Stop battle song
@@ -499,9 +561,8 @@ int main() {
                                         }
                                         commandsIndicies[FLEE] = false;
                                         commandsIndicies[ATTACK] = true;
-                                       // GameManager::enemiesLocalization.erase(currentCoordinate);
-                                    }
-                                    else{ // Failed
+                                        // GameManager::enemiesLocalization.erase(currentCoordinate);
+                                    } else { // Failed
                                         player.justAttacked = true; // Just for player now be attacked next
                                         player.justFailedFleeing = true;
                                         al_set_timer_count(fightTimer, 0);
@@ -532,33 +593,31 @@ int main() {
             int battleStateUpdate = gameManager.battleStateUpdate(&GameManager::enemiesLocalization[currentCoordinate], &player, &currentCoordinate);
 
             // Player killed all monsters
-            if(battleStateUpdate == 1){
+            if (battleStateUpdate == 1) {
                 audioManager.stopPlaying(battleMusic); // Stop battle song
             }
 
-            // Player dead
-            else if (battleStateUpdate == 2){
+                // Player dead
+            else if (battleStateUpdate == 2) {
 
-                if(audioManager.isPlaying and audioManager.whatIsNowPlaying() == "battle") {
+                if (audioManager.isPlaying and audioManager.whatIsNowPlaying() == "battle") {
                     audioManager.stopPlaying(battleMusic);
                     audioManager.playLoop(loseId);
                 }
 
-                if(player.name == "alan"){
+                if (player.name == "alan") {
                     al_draw_bitmap(alanDeathScreen, 0, 0, 0);
                     al_flip_display();
                     al_rest(3);
                     running = false;
-                }
-                else{
+                } else {
                     al_draw_bitmap(adaDeathScreen, 0, 0, 0);
                     al_flip_display();
                     al_rest(3);
                     running = false;
                 }
 
-            }
-            else{
+            } else {
 
             }
 
@@ -570,11 +629,11 @@ int main() {
         }
     }
 
-  // só pra não acabar com minha ram
-  if(audioManager.isPlaying and audioManager.whatIsNowPlaying() == "battle") {
+    // só pra não acabar com minha ram
+    if (audioManager.isPlaying and audioManager.whatIsNowPlaying() == "battle") {
 
-      audioManager.stopPlaying(battleMusic);
-  }
+        audioManager.stopPlaying(battleMusic);
+    }
 
     // Cleaning garbage
     al_destroy_display(display);

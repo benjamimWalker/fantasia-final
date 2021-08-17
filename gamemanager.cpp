@@ -10,11 +10,10 @@ using namespace std;
 
 class GameManager{
 public:
-    static unsigned short gameMode;
+    static u_short gameMode;
     static bool isGameFinished;
-    static unsigned short numEnemies; // 18
-    static unsigned short level;
-
+    static u_short numEnemies; // 18
+    static u_short level;
 
    /* One of the most important piece of data
     * it has a link between a vector with 1 to 3 monsters

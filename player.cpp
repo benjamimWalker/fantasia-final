@@ -29,7 +29,7 @@ public:
     int width;
     int height;
     bool justAttacked = false;
-    int numberOfEspecialAttack = 4;
+    int numberOfEspecialAttack = 20;
     float x = 40, y = 40; //coordinates for drawing each image of the player
 
      Player(int pLife, int pPoints, float pMoveSpeed, string pName){
