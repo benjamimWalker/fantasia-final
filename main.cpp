@@ -21,17 +21,18 @@ using namespace std;
 
 //global gamemanager's static variables
 map<pair<int, int>, vector<Monster>> GameManager::enemiesLocalization;
-unsigned short GameManager::gameMode;
-unsigned short GameManager::numEnemies = 42; //The answer
-unsigned short GameManager::level = 1;
+u_short GameManager::gameMode;
+u_short GameManager::numEnemies = 42; //The answer
+u_short GameManager::level = 1;
 
 int main() {
 
     //audio files id
-    const unsigned short int prologueId = 0;
-    const unsigned short int generalID = 1;
-    const unsigned short int battleId = 2;
-    const unsigned short int victoryId = 3;
+    const u_int prologueId = 0;
+    const u_int generalID = 1;
+    const u_int battleId = 2;
+    const u_int victoryId = 3;
+    const u_int loseId = 4;
 
     //creating pointer variables
     ALLEGRO_DISPLAY *display = nullptr;
@@ -49,10 +50,14 @@ int main() {
     ALLEGRO_TIMER *fightTimer;
     ALLEGRO_SAMPLE *generalMusic;
     ALLEGRO_SAMPLE *battleMusic;
+    ALLEGRO_SAMPLE *victoryMusic;
+    ALLEGRO_SAMPLE *loseMusic;
     ALLEGRO_BITMAP *adaDeathScreen;
     ALLEGRO_BITMAP *adaWinScreen;
+    ALLEGRO_BITMAP *adaWinRecordScreen;
     ALLEGRO_BITMAP *alanDeathScreen;
     ALLEGRO_BITMAP *alanWinScreen;
+    ALLEGRO_BITMAP *alanWinRecordScreen;
 
     const unsigned short windowWidth = 919;
     const unsigned short windowHeight = 517; //window properties
@@ -108,7 +113,7 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(70, 0, 1.2, "alan");
+    Player player = Player(7, 0, 1.2, "alan");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -129,9 +134,11 @@ int main() {
     battleBitmaps[2] = al_load_bitmap("../assets/sprites/maps/battlemap3.png");
 
     adaDeathScreen = al_load_bitmap("../assets/sprites/ada_death.png");
-    adaWinScreen = al_load_bitmap("../assets/sprites/ada_victory.png");
+    adaWinScreen = al_load_bitmap("../assets/sprites/ada_win.png");
+    adaWinRecordScreen = al_load_bitmap("../assets/sprites/ada_win_record.png");
     alanDeathScreen = al_load_bitmap("../assets/sprites/alan_death.png");
-    alanWinScreen = al_load_bitmap("../assets/sprites/alan_victory.png");
+    alanWinScreen = al_load_bitmap("../assets/sprites/alan_win.png");
+    alanWinRecordScreen = al_load_bitmap("../assets/sprites/alan_win_record.png");
 
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
@@ -430,7 +437,12 @@ int main() {
                 }
                 //Monster switch with arrow keys
                 if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-                    gameManager.changeSelectedLeft(&GameManager::enemiesLocalization[currentCoordinate]);
+                    try{
+                        gameManager.changeSelectedLeft(&GameManager::enemiesLocalization[currentCoordinate]);
+                    }
+                    catch (logic_error &error){
+
+                    }
                 }
                 if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
                     gameManager.changeSelectedRight(&GameManager::enemiesLocalization[currentCoordinate]);
@@ -519,6 +531,13 @@ int main() {
 
             // Player dead
             else if (battleStateUpdate == 2){
+
+                if(audioManager.isPlaying and audioManager.whatIsNowPlaying() == "battle") {
+                    printf("entro \n");
+                    audioManager.stopPlaying(battleMusic);
+                    audioManager.playLoop(loseId);
+                }
+
                 if(player.name == "alan"){
                     al_draw_bitmap(alanDeathScreen, 0, 0, 0);
                     al_flip_display();
@@ -531,6 +550,7 @@ int main() {
                     al_rest(3);
                     running = false;
                 }
+
             }
             else{
 
@@ -544,7 +564,12 @@ int main() {
         }
     }
 
-    audioManager.stopPlaying(battleMusic); // só pra não acabar com minha ram
+  // só pra não acabar com minha ram
+  if(audioManager.isPlaying and audioManager.whatIsNowPlaying() == "battle") {
+
+      audioManager.stopPlaying(battleMusic);
+  }
+
     // Cleaning garbage
     al_destroy_display(display);
     al_uninstall_keyboard();
@@ -552,6 +577,12 @@ int main() {
     al_uninstall_audio();
     al_destroy_bitmap(playerSprite);
     al_destroy_bitmap(playerBattleSprite);
+    al_destroy_bitmap(alanWinScreen);
+    al_destroy_bitmap(alanWinRecordScreen);
+    al_destroy_bitmap(alanDeathScreen);
+    al_destroy_bitmap(adaWinScreen);
+    al_destroy_bitmap(adaWinRecordScreen);
+    al_destroy_bitmap(adaDeathScreen);
     al_destroy_bitmap(map1);
     al_destroy_bitmap(map2);
     al_destroy_bitmap(map3);

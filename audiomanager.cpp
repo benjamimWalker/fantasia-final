@@ -7,11 +7,13 @@ class AudioManger{
 public:
     bool isPlaying = false;
     bool isPlayingOnce = false;
+    string whatIsPlaying;
 private:
     string prologue = "../assets/audios/músicas/prologue.ogg";
     string geral = "../assets/audios/músicas/geral.ogg";
     string battle = "../assets/audios/músicas/batalha.ogg";
     string victory = "../assets/audios/músicas/vitoria.ogg";
+    string lose = "../assets/audios/músicas/derrota.ogg";
     string alan_hurt = "../assets/audios/efeitos/alan_hurt.ogg";
     string ada_hurt = "../assets/audios/efeitos/ada_hurt.ogg";
     string monster_hurt = "../assets/audios/efeitos/monster_hurt.ogg";
@@ -44,16 +46,23 @@ private:
         switch (level) {
             case 0:
                 sampleToPlay = prologue;
+                whatIsPlaying = "prologue";
                 break;
             case 1:
                 sampleToPlay = geral;
+                whatIsPlaying = "geral";
                 break;
             case 2:
                 sampleToPlay = battle;
+                whatIsPlaying = "battle";
                 break;
             case 3:
                 sampleToPlay = victory;
+                whatIsPlaying = "victory";
                 break;
+            case 4:
+                sampleToPlay = lose;
+                whatIsPlaying = "lose";
         }
         ALLEGRO_SAMPLE *pr = al_load_sample(sampleToPlay.c_str());
         al_reserve_samples(2);
@@ -65,5 +74,9 @@ private:
     void stopPlaying(ALLEGRO_SAMPLE *sample){
         al_destroy_sample(sample);
         isPlaying = false;
+    }
+
+    string whatIsNowPlaying() const{
+        return whatIsPlaying;
     }
 };
