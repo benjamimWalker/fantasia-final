@@ -12,6 +12,7 @@
 #include "audiomanager.cpp"
 #include "gamemanager.cpp"
 #include "uimanager.cpp"
+#include "scoremanager.cpp"
 
 #include <unistd.h>
 // REALLY BIG TODO GARANTIR QUE O PERSONAGEM NÃO COMECE JÁ ENCIMA DE UM BANDO DE INIMIGOS
@@ -112,7 +113,7 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(90, 0, 1.2, "ada");
+    Player player = Player(90, 0, 1.2, "alan");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -168,6 +169,7 @@ int main() {
     int previousTimeCount; // Used for counting time to an enemy wait a little for attack, or else it would be pretty fast
 
     uiManager.prepareUI();
+    ScoreManager scoreManager;
 
     // main loop
     while (running) {
@@ -236,13 +238,36 @@ int main() {
                         al_rest(0.75);
                         if (player.name == "alan") {
                             // TODO MOSTRAR RECORD TAMBÉM
-                            al_draw_bitmap(alanWinScreen, 0, 0, 0);
-                            uiManager.scoreUI(player.points);
+
+                            // New record
+                            if(player.points > scoreManager.getRecord()){
+                                scoreManager.setScore(player.points);
+                                al_draw_bitmap(alanWinRecordScreen, 0, 0, 0);
+                                uiManager.scoreUI(player.points);
+                            }
+
+                            // No new record
+                            else{
+                                al_draw_bitmap(alanWinScreen, 0, 0, 0);
+                                uiManager.recordUI(scoreManager.getRecord());
+                                uiManager.scoreUI(player.points);
+                            }
                             al_flip_display();
                             al_rest(4);
                             running = false;
                         } else {
-                            al_draw_bitmap(adaWinScreen, 0, 0, 0);
+                            if(player.points > scoreManager.getRecord()){
+                                scoreManager.setScore(player.points);
+                                al_draw_bitmap(adaWinRecordScreen, 0, 0, 0);
+                                uiManager.scoreUI(player.points);
+                            }
+
+                            // No new record
+                            else{
+                                al_draw_bitmap(adaWinScreen, 0, 0, 0);
+                                uiManager.scoreUI(player.points);
+                                uiManager.recordUI(scoreManager.getRecord());
+                            }
                             // TODO MOSTRAR RECORD TAMBÉM
                             uiManager.scoreUI(player.points);
                             al_flip_display();

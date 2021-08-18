@@ -129,7 +129,6 @@ public:
     int getNextToAttack(vector<Monster> currentMonster){
         for (int i = 0; i < currentMonster.size(); i++) {
             if (currentMonster[i].isNextToAttack) {
-                cout << "Atacado por " << i << endl;
                 return i;
             }
         }
