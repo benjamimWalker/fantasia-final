@@ -58,8 +58,8 @@ int main() {
     ALLEGRO_BITMAP *alanWinScreen;
     ALLEGRO_BITMAP *alanWinRecordScreen;
 
-    const unsigned short windowWidth = 919;
-    const unsigned short windowHeight = 517; //window properties
+    const u_short windowWidth = 919;
+    const u_short windowHeight = 517; //window properties
 
     if (!al_init()) {
         al_show_native_message_box(display, "Temos problemas", "O jogo não conseguiu executar",
@@ -112,7 +112,7 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(85, 0, 1.2, "ada");
+    Player player = Player(90, 0, 1.2, "ada");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -205,7 +205,13 @@ int main() {
 
                 //Recover life
                 player.life = player.fullLife;
-                GameManager::enemiesLocalization.clear();
+                for (int i = 0; i < GameManager::enemiesLocalization.size(); i++) {
+                    for (int j = 0; j < GameManager::enemiesLocalization[currentCoordinate].size(); j++) {
+                        GameManager::enemiesLocalization[currentCoordinate][j].clean(); // Cleaning bitmaps
+                    }
+                }
+                GameManager::enemiesLocalization.clear(); // Clearing monster with coordinates
+                // Setting new monsters with new coordinates
                 gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2,
                                           (int) (windowHeight - playerSpriteWidth) - 2);
                 if (GameManager::level == 3) {
@@ -462,7 +468,14 @@ int main() {
                 // Drawing player, if attacked, attacking or none
                 if (player.justAttacked) {
                     if (al_get_timer_count(fightTimer) - previousTimeCount <= 3 and not player.justFailedFleeing) {
-                        al_draw_tinted_bitmap(playerBattleSprite, attackColor, 800, 220, 0); //Drawing player's sprite
+                        if(gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate]) == 0)
+                            al_draw_tinted_bitmap(playerBattleSprite, attackColor, 65, 220, 0); //Drawing player's sprite
+
+                        else if(gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate]) == 1)
+                            al_draw_tinted_bitmap(playerBattleSprite, attackColor, 300, 220, 0); //Drawing player's sprite
+
+                        else if(gameManager.getSelected(GameManager::enemiesLocalization[currentCoordinate]) == 2)
+                            al_draw_tinted_bitmap(playerBattleSprite, attackColor, 500, 220, 0); //Drawing player's sprite
                     } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
                                al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                         al_draw_tinted_bitmap(playerBattleSprite, damageColor, 800, 220, 0); //Drawing player's sprite

@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.7)
 project(fantasia-final)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 set(SOURCE_FILES main.cpp player.cpp audiomanager.cpp gamemanager.cpp monster.cpp uimanager.cpp)
 add_executable(fantasia-final ${SOURCE_FILES})
 SET(ALLEGRO_ROOT allegro/)

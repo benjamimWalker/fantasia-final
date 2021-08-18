@@ -128,7 +128,7 @@ public:
             if(i == 2){
                 float x2; //Second x coordinate for filled rectangle, for displaying current life
                 //Name
-               // al_draw_text(font, silver, 480, 410, 0, monsters[i].name.c_str());
+                al_draw_text(font, silver, 480, 410, 0, monsters[i].name.c_str());
                 //Unfilled rect
                 al_draw_rounded_rectangle(470, 450, 660, 464, 5, 5, silver, 2);
                 x2 = (float) (monsters[i].life * (660 - 470)) / (float) monsters[i].fullLife + 470;

@@ -24,7 +24,7 @@ public:
    // Put Monsters on their place
     vector<Monster> populateEnemies(){
         vector<Monster> vec;
-        for (int i = 0; i < (random() % 3) + 1; i++){ //(random() % 3) + 1
+        for (int i = 0; i < 3; i++){ //(random() % 3) + 1
             vec.emplace_back(Monster());
         }
         return vec;
