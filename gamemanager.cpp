@@ -14,6 +14,7 @@ public:
     static bool isGameFinished;
     static u_short numEnemies; // 18
     static u_short level;
+    static string selectedHero;
 
    /* One of the most important piece of data
     * it has a link between a vector with 1 to 3 monsters
@@ -182,7 +183,6 @@ public:
             return true;
         }
 
-
         for (int i = 0; i < currentMonster->size(); i++) {
             // ONE MONSTER DIED
             if(not currentMonster->at(i).alive){
@@ -202,7 +202,17 @@ public:
         return false;
     }
 
-    void exploringStateUpdate(){
-        //TODO CAREFUL WITH LEVELS!! THIS IS FOR PASSING THEN
+    void heroChoice(int keyCode){
+        switch (keyCode) {
+            case ALLEGRO_KEY_RIGHT:
+                if(selectedHero == "ada")
+                    selectedHero = "alan";
+                break;
+            case ALLEGRO_KEY_LEFT:
+                if(selectedHero == "alan")
+                    selectedHero = "ada";
+                break;
+        }
     }
+
 };

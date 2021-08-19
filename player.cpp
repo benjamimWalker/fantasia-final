@@ -38,7 +38,7 @@ public:
         points = pPoints;
         moveSpeed = pMoveSpeed;
         name = move(pName);
-        attack = 7.4;
+        attack = 8.4;
     }
 
     // calculates the distance between the player and some object by it's coordinates

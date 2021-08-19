@@ -173,7 +173,6 @@ public:
     bool operator <(const Monster& rhs) const
     {
         return life <= rhs.life;
-        //TODO CRIAR UM ID ESPECIAL PARA EVITAR CONFLITO
     }
 
 };

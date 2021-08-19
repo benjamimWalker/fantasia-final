@@ -14,6 +14,7 @@ public:
     // Fonts and colors
     ALLEGRO_FONT *font;
     ALLEGRO_FONT *scoreFont;
+    ALLEGRO_FONT *scoreIndicatorFont;
     ALLEGRO_COLOR green;
     ALLEGRO_COLOR red;
     ALLEGRO_COLOR silver;
@@ -28,6 +29,7 @@ public:
         al_init_ttf_addon();
         font = al_load_font("../assets/fonts/quicksand.ttf", 18, 0);
         scoreFont = al_load_font("../assets/fonts/quicksand.ttf", 38, 0);
+        scoreIndicatorFont = al_load_font("../assets/fonts/quicksand.ttf", 28, 0);
         green =  al_map_rgb(146, 247, 99);
         red   =  al_map_rgb(237, 89, 52);
         silver = al_map_rgb(166, 185, 186);
@@ -161,5 +163,9 @@ public:
 
     void recordUI(int score){
         al_draw_text(scoreFont, rose, 750, 307, 0, to_string(score).c_str());
+    }
+
+    void scoreIndicator(int score){
+        al_draw_text(font, white, 35, 15, 0, ("Pontos: " + to_string(score)).c_str());
     }
 };

@@ -24,6 +24,7 @@ map<pair<int, int>, vector<Monster>> GameManager::enemiesLocalization;
 u_short GameManager::gameMode;
 u_short GameManager::numEnemies = 42; //The answer
 u_short GameManager::level = 1;
+string GameManager::selectedHero = "ada";
 
 int main() {
 
@@ -113,7 +114,7 @@ int main() {
     UIManager uiManager{};
 
     // setting player character
-    Player player = Player(90, 0, 1.2, "alan");
+    Player player = Player(45, 0, 1.2, "ada");
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -256,6 +257,7 @@ int main() {
                             al_rest(4);
                             running = false;
                         } else {
+                            // New record
                             if(player.points > scoreManager.getRecord()){
                                 scoreManager.setScore(player.points);
                                 al_draw_bitmap(adaWinRecordScreen, 0, 0, 0);
@@ -329,9 +331,13 @@ int main() {
 
                 // TODO [DEBUG DRAWING]
                 al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
-                //drawing player
+                // Drawing player
                 al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth,
                                       playerSpriteHeight, player.x, player.y, 0);
+                // Drawing score
+                uiManager.scoreIndicator(player.points);
+                uiManager.playerLifeBar(player.fullLife, player.life, make_pair(35, 37));
+
                 al_flip_display();
 
                 // setting keyboard input
@@ -433,7 +439,7 @@ int main() {
                         } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
                                    al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                             if (gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate]) == i) {
-                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM1, 0, width / 3, height, 10, 200, 0);
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM1, 0, width / 3, height, 720, 200, 0);
                             } else {
                                 al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM1, 0, width / 3, height, 10, 200, 0);
                             }
@@ -454,7 +460,7 @@ int main() {
                         } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
                                    al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                             if (gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate]) == i) {
-                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
+                                al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM2, 0, width / 3, height, 720, 200, 0);
                             } else {
                                 al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM2, 0, width / 3, height, 25 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3, 200, 0);
                             }
@@ -478,7 +484,7 @@ int main() {
                                    al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                             if (gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate]) == i) {
                                 al_draw_tinted_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, attackColor, sXM3, 0, width / 3, height,
-                                                             40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
+                                                             + 720, 200, 0);
                             } else {
                                 al_draw_bitmap_region(GameManager::enemiesLocalization[currentCoordinate][i].bitmap, sXM3, 0, width / 3, height,
                                                       40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
@@ -614,7 +620,7 @@ int main() {
 
             if (player.justAttacked) { // Condition for to the current monster to attack, well... Attack!
 
-                // Play damage
+                // Play damage sound
                 if (al_get_timer_count(fightTimer) - previousTimeCount >= 5 and al_get_timer_count(fightTimer) - previousTimeCount < 6)
                     audioManager.playOnce("hurt", player.name);
 
@@ -645,11 +651,15 @@ int main() {
 
                 if (player.name == "alan") {
                     al_draw_bitmap(alanDeathScreen, 0, 0, 0);
+                    uiManager.recordUI(scoreManager.getRecord());
+                    uiManager.scoreUI(player.points);
                     al_flip_display();
                     al_rest(3);
                     running = false;
                 } else {
                     al_draw_bitmap(adaDeathScreen, 0, 0, 0);
+                    uiManager.recordUI(scoreManager.getRecord());
+                    uiManager.scoreUI(player.points);
                     al_flip_display();
                     al_rest(3);
                     running = false;
