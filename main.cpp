@@ -59,6 +59,8 @@ int main() {
     ALLEGRO_BITMAP *alanDeathScreen;
     ALLEGRO_BITMAP *alanWinScreen;
     ALLEGRO_BITMAP *alanWinRecordScreen;
+    ALLEGRO_BITMAP *heroChoiceScreenAda;
+    ALLEGRO_BITMAP *heroChoiceScreenAlan;
 
     const u_short windowWidth = 919;
     const u_short windowHeight = 517; //window properties
@@ -113,14 +115,6 @@ int main() {
     // creating the instance of the ui manager
     UIManager uiManager{};
 
-    // setting player character
-    Player player = Player(45, 0, 1.2, "ada");
-    player.setDimensions();
-    playerSprite = al_load_bitmap(player.spritePath.c_str());
-    playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
-    float playerSpriteWidth = player.individualSpriteX;
-    float playerSpriteHeight = player.individualSpriteY;
-
     // loading images for the 3 maps and chests
     map1 = al_load_bitmap("../assets/sprites/maps/mapa1.png");
     chest1 = al_load_bitmap("../assets/sprites/chest1.png");
@@ -134,12 +128,51 @@ int main() {
     battleBitmaps[1] = al_load_bitmap("../assets/sprites/maps/battlemap2.png");
     battleBitmaps[2] = al_load_bitmap("../assets/sprites/maps/battlemap3.png");
 
+    // UI screens
     adaDeathScreen = al_load_bitmap("../assets/sprites/ada_death.png");
     adaWinScreen = al_load_bitmap("../assets/sprites/ada_win.png");
     adaWinRecordScreen = al_load_bitmap("../assets/sprites/ada_win_record.png");
     alanDeathScreen = al_load_bitmap("../assets/sprites/alan_death.png");
     alanWinScreen = al_load_bitmap("../assets/sprites/alan_win.png");
     alanWinRecordScreen = al_load_bitmap("../assets/sprites/alan_win_record.png");
+    heroChoiceScreenAda = al_load_bitmap("../assets/sprites/playerselectedada.png");
+    heroChoiceScreenAlan = al_load_bitmap("../assets/sprites/playerselectedalan.png");
+
+    // UI screens
+    adaDeathScreen = al_load_bitmap("../assets/sprites/ada_death.png");
+    adaWinScreen = al_load_bitmap("../assets/sprites/ada_win.png");
+    adaWinRecordScreen = al_load_bitmap("../assets/sprites/ada_win_record.png");
+    alanDeathScreen = al_load_bitmap("../assets/sprites/alan_death.png");
+    alanWinScreen = al_load_bitmap("../assets/sprites/alan_win.png");
+    alanWinRecordScreen = al_load_bitmap("../assets/sprites/alan_win_record.png");
+    heroChoiceScreenAda = al_load_bitmap("../assets/sprites/playerselectedada.png");
+    heroChoiceScreenAlan = al_load_bitmap("../assets/sprites/playerselectedalan.png");
+
+    // Choosing hero
+    int currentKey;
+    do{
+        if(GameManager::selectedHero == "alan"){
+            al_draw_bitmap(heroChoiceScreenAlan, 0, 0, 0);
+        }
+        else if(GameManager::selectedHero == "ada"){
+            al_draw_bitmap(heroChoiceScreenAda, 0, 0, 0);
+        }
+        al_flip_display();
+        ALLEGRO_EVENT preGameEvent;
+        al_wait_for_event(eventQueue, &preGameEvent);
+        if(preGameEvent.type == ALLEGRO_EVENT_KEY_DOWN){
+            currentKey = preGameEvent.keyboard.keycode;
+            gameManager.heroChoice(currentKey);
+        }
+    }while(currentKey != ALLEGRO_KEY_ENTER);
+
+    // setting player character
+    Player player = Player(45, 0, 1.2, GameManager::selectedHero);
+    player.setDimensions();
+    playerSprite = al_load_bitmap(player.spritePath.c_str());
+    playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
+    float playerSpriteWidth = player.individualSpriteX;
+    float playerSpriteHeight = player.individualSpriteY;
 
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
