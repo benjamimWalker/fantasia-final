@@ -24,9 +24,10 @@ map<pair<int, int>, vector<Monster>> GameManager::enemiesLocalization;
 u_short GameManager::gameMode;
 u_short GameManager::numEnemies = 42; //The answer
 u_short GameManager::level = 1;
-string GameManager::selectedHero = "ada";
+string GameManager::selectedHero;
 
 int main() {
+    GameManager::selectedHero = "ada";
 
     //audio files id
     const u_int prologueId = 0;
@@ -49,6 +50,7 @@ int main() {
     ALLEGRO_BITMAP *chest3;
     ALLEGRO_TIMER *expTimer;
     ALLEGRO_TIMER *fightTimer;
+    ALLEGRO_SAMPLE *prologueMusic;
     ALLEGRO_SAMPLE *generalMusic;
     ALLEGRO_SAMPLE *battleMusic;
     ALLEGRO_SAMPLE *victoryMusic;
@@ -61,6 +63,7 @@ int main() {
     ALLEGRO_BITMAP *alanWinRecordScreen;
     ALLEGRO_BITMAP *heroChoiceScreenAda;
     ALLEGRO_BITMAP *heroChoiceScreenAlan;
+    ALLEGRO_BITMAP *startScreen;
 
     const u_short windowWidth = 919;
     const u_short windowHeight = 517; //window properties
@@ -147,6 +150,17 @@ int main() {
     alanWinRecordScreen = al_load_bitmap("../assets/sprites/alan_win_record.png");
     heroChoiceScreenAda = al_load_bitmap("../assets/sprites/playerselectedada.png");
     heroChoiceScreenAlan = al_load_bitmap("../assets/sprites/playerselectedalan.png");
+    startScreen = al_load_bitmap("../assets/sprites/start_screen.png");
+
+    // Start screen
+    prologueMusic = audioManager.playLoop(prologueId);
+    ALLEGRO_EVENT initGame;
+    do{
+        al_draw_bitmap(startScreen, 0, 0, 0);
+        al_flip_display();
+        al_wait_for_event(eventQueue, &initGame);
+    }
+    while(initGame.type != ALLEGRO_EVENT_KEY_DOWN);
 
     // Choosing hero
     int currentKey;
@@ -166,14 +180,17 @@ int main() {
         }
     }while(currentKey != ALLEGRO_KEY_ENTER);
 
+    al_destroy_bitmap(startScreen);
+    audioManager.stopPlaying(prologueMusic);
+
+
     // setting player character
-    Player player = Player(45, 0, 1.2, GameManager::selectedHero);
+    Player player = Player(3, 0, 1.2, GameManager::selectedHero);
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
     float playerSpriteWidth = player.individualSpriteX;
     float playerSpriteHeight = player.individualSpriteY;
-
     int spriteSheetAnimationRefreshFPS = 0;
     bool running = true;
     int direction; //range from zero to four for changing the image's direction
@@ -358,7 +375,7 @@ int main() {
                 // TODO [DEBUG DRAWING]
                 for (const auto &enemy: GameManager::enemiesLocalization) {
                     for (auto monster: enemy.second) {
-                        al_draw_filled_circle(enemy.first.first, enemy.first.second, 13, al_map_rgb(255, 255, 255));
+                        al_draw_filled_circle((float) enemy.first.first, (float) enemy.first.second, 13, al_map_rgb(255, 255, 255));
                     }
                 }
 
@@ -543,8 +560,12 @@ int main() {
                     } else if (al_get_timer_count(fightTimer) - previousTimeCount > 5 and
                                al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                         al_draw_tinted_bitmap(playerBattleSprite, damageColor, 800, 220, 0); //Drawing player's sprite
-
-                        uiManager.damageUiIndicator(GameManager::enemiesLocalization[currentCoordinate][gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate])].attack);
+                        int hitValue = GameManager::enemiesLocalization[currentCoordinate][gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate])].attack;
+                        if (hitValue >= 2 and hitValue <= 4)
+                            uiManager.damageUiIndicator(hitValue);
+                        else{
+                            uiManager.damageUiIndicator(0);
+                        }
                     } else {
                         al_draw_bitmap(playerBattleSprite, 800, 220, 0);
                     }
@@ -625,7 +646,7 @@ int main() {
                                     }
                                     break;
                                 case FLEE: //Check if the option is Flee
-                                    int probabilidade = random() % 11;
+                                    int probabilidade = (int) random() % 11;
                                     // It seems it tends to generate bigger numbers, so I divided half to half
                                     if (probabilidade > 5) { // Success
                                         GameManager::gameMode = EXPLORING; //Back to exploring
@@ -661,7 +682,9 @@ int main() {
                 if (al_get_timer_count(fightTimer) - previousTimeCount >= 10) {
                     player.justAttacked = false;
 
-                    player.hit(GameManager::enemiesLocalization[currentCoordinate][gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate])].attack);
+                    int hitValue = GameManager::enemiesLocalization[currentCoordinate][gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate])].attack;
+                    if (hitValue >= 2 and hitValue <= 4)
+                    player.hit(hitValue);
 
                     gameManager.changeNextoToAttak(&GameManager::enemiesLocalization[currentCoordinate]);
                 }
@@ -702,7 +725,6 @@ int main() {
 
             }
 
-
 //            GameManager::gameMode = EXPLORING;
 //          player.exempted = true;
             isOnBattle = false;
@@ -710,7 +732,7 @@ int main() {
         }
     }
 
-    // só pra não acabar com minha ram
+    // só pra não acabar com a minha ram
     if (audioManager.isPlaying and audioManager.whatIsNowPlaying() == "battle") {
 
         audioManager.stopPlaying(battleMusic);
@@ -735,6 +757,8 @@ int main() {
     al_destroy_bitmap(chest1);
     al_destroy_bitmap(chest2);
     al_destroy_bitmap(chest3);
+    al_destroy_bitmap(heroChoiceScreenAlan);
+    al_destroy_bitmap(heroChoiceScreenAda);
     al_destroy_bitmap(battleBitmaps[0]);
     al_destroy_bitmap(battleBitmaps[1]);
     al_destroy_bitmap(battleBitmaps[2]);

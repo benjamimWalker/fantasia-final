@@ -196,6 +196,7 @@ public:
                 }
                 currentMonster->at(i).clean(); // Clean bitmap
                 currentMonster->erase(currentMonster->begin() + i); // Erase monster
+                al_rest(0.14);
             }
         }
 

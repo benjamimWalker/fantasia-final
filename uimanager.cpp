@@ -144,7 +144,12 @@ public:
 
     //Show in text the damage made by a monster in player
     void damageUiIndicator(int damage) const{
-        al_draw_text(font, al_map_rgb(255, 255, 255), 780, 350, 0, ("-" + to_string(damage) ).c_str());
+        if (damage == 0){
+            al_draw_text(scoreFont, al_map_rgb(255, 255, 255), 780, 350, 0, "Falhou");
+
+        }
+        else
+            al_draw_text(scoreFont, al_map_rgb(255, 255, 255), 780, 350, 0, ("-" + to_string(damage) ).c_str());
     }
 
     // Show the player's life in numbers
