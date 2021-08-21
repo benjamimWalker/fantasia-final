@@ -23,6 +23,7 @@ public:
     ALLEGRO_COLOR playerLife;
     ALLEGRO_COLOR rose;
     ALLEGRO_COLOR white;
+    ALLEGRO_COLOR backgroundTransparent;
 
     void prepareUI() {
         al_init_font_addon();
@@ -37,9 +38,9 @@ public:
         yellow = al_map_rgb(247, 229, 126);
         white = al_map_rgb(255, 255, 255);
         rose = al_map_rgb(241, 221, 207);
+        backgroundTransparent = al_map_rgba(5, 55, 135, 146);
         playerLife = green;
     }
-
 
     void drawLifeBar() {
         al_draw_rounded_rectangle(200, 234, 350, 245, 4, 4, al_map_rgb(255, 255, 255), 2);
@@ -171,6 +172,12 @@ public:
     }
 
     void scoreIndicator(int score){
+        al_draw_filled_rounded_rectangle(30, 12, (float) 140, 44, 7, 7, backgroundTransparent);
         al_draw_text(font, white, 35, 15, 0, ("Pontos: " + to_string(score)).c_str());
+    }
+
+    void levelIndicator(int level){
+        al_draw_filled_rounded_rectangle(695, 12, 774, 44, 7, 7, backgroundTransparent);
+        al_draw_text(font, white, 700, 15, 0, ("Nível: " + to_string(level)).c_str());
     }
 };

@@ -4,7 +4,6 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_primitives.h>
-#include <allegro5/allegro_ttf.h>
 #include <cmath>
 #include <vector>
 #include <iostream>
@@ -185,7 +184,7 @@ int main() {
 
 
     // setting player character
-    Player player = Player(3, 0, 1.2, GameManager::selectedHero);
+    Player player = Player(40, 0, 1.2, GameManager::selectedHero);
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -199,7 +198,7 @@ int main() {
     al_start_timer(expTimer);
     al_start_timer(fightTimer);
     ALLEGRO_COLOR attackColor = al_map_rgb(48, 219, 48);
-    ALLEGRO_COLOR damageColor = al_map_rgb(217, 58, 43);
+    ALLEGRO_COLOR damageColor = al_map_rgba(217, 58, 43, 220);
     /*
      * Random number generator seeded with a disallowed source of seed value will generate
      * a predictable sequence of values
@@ -387,6 +386,7 @@ int main() {
                 // Drawing score
                 uiManager.scoreIndicator(player.points);
                 uiManager.playerLifeBar(player.fullLife, player.life, make_pair(35, 37));
+                uiManager.levelIndicator(GameManager::level);
 
                 al_flip_display();
 
