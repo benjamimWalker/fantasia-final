@@ -257,11 +257,6 @@ int main() {
 
                 //Recover life
                 player.life = player.fullLife;
-                for (int i = 0; i < GameManager::enemiesLocalization.size(); i++) {
-                    for (int j = 0; j < GameManager::enemiesLocalization[currentCoordinate].size(); j++) {
-                        GameManager::enemiesLocalization[currentCoordinate][j].clean(); // Cleaning bitmaps
-                    }
-                }
                 GameManager::enemiesLocalization.clear(); // Clearing monster with coordinates
                 // Setting new monsters with new coordinates
                 gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2,
@@ -385,7 +380,7 @@ int main() {
                                       playerSpriteHeight, player.x, player.y, 0);
                 // Drawing score
                 uiManager.scoreIndicator(player.points);
-                uiManager.playerLifeBar(player.fullLife, player.life, make_pair(35, 37));
+                uiManager.playerLifeBar(player.fullLife, player.life, make_pair(35, 47));
                 uiManager.levelIndicator(GameManager::level);
 
                 al_flip_display();
@@ -449,6 +444,7 @@ int main() {
 
             //Executed once when a monster is found
             if (isOnBattle) {
+                player.justAttacked = false;
                 battleBitMapIndex = GameManager::level - 1;
                 GameManager::enemiesLocalization[currentCoordinate][0].isSelected = true;
                 GameManager::enemiesLocalization[currentCoordinate][0].isNextToAttack = true;
@@ -466,9 +462,6 @@ int main() {
                 //TODO descomentar essa parte no final
                 //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
                 running = false;
-                for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
-                    GameManager::enemiesLocalization[currentCoordinate][i].clean();
-                }
                 uiManager.clean();
             }
             if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == fightTimer) {
@@ -573,7 +566,7 @@ int main() {
                     al_draw_bitmap(playerBattleSprite, 800, 220, 0);
                 }
                 uiManager.playerInfoBackground(player.name, player.fullLife, player.life,
-                                               commandsIndicies); //player background info
+                                               commandsIndicies, player.numberOfEspecialAttack); //player background info
                 uiManager.enemiesInfoBackground(GameManager::enemiesLocalization[currentCoordinate]); //monsters background info
                 al_flip_display();
             }
@@ -654,9 +647,9 @@ int main() {
                                         audioManager.stopPlaying(battleMusic); // Stop battle song
                                         player.justFailedFleeing = false; // Did not fail
                                         gameManager.deselectAll(&GameManager::enemiesLocalization[currentCoordinate]);
-                                        for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
-                                            GameManager::enemiesLocalization[currentCoordinate][i].clean();
-                                        }
+//                                        for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
+//                                            GameManager::enemiesLocalization[currentCoordinate][i].clean();
+//                                        }
                                         commandsIndicies[FLEE] = false;
                                         commandsIndicies[ATTACK] = true;
                                         // GameManager::enemiesLocalization.erase(currentCoordinate);
@@ -765,7 +758,11 @@ int main() {
     al_destroy_event_queue(eventQueue);
     al_destroy_timer(expTimer);
     al_destroy_timer(fightTimer);
-
+    for (int i = 0; i < GameManager::enemiesLocalization.size(); i++) {
+        for (int j = 0; j < GameManager::enemiesLocalization[currentCoordinate].size(); j++) {
+            GameManager::enemiesLocalization[currentCoordinate][j].clean(); // Cleaning bitmaps
+        }
+    }
     return 0;
     //END OF CODE
 }

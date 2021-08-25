@@ -48,7 +48,7 @@ public:
     }
 
     //Draw a rectangle in which the info will be displayed
-    void playerInfoBackground(const string &playerName, int fullLife, int life, const bool commands[3]) const {
+    void playerInfoBackground(const string &playerName, int fullLife, int life, const bool commands[3], int numberOfEspecialAttacks) const {
         int attackIndicatorLocation = 0;
         float x2; //Second x coordinate for filled rectangle, for displaying current life
         //Background
@@ -62,6 +62,12 @@ public:
         al_draw_text(font, silver, 895, 432, ALLEGRO_ALIGN_RIGHT, "Atacar");
         al_draw_text(font, silver, 895, 456, ALLEGRO_ALIGN_RIGHT, "Especial");
         al_draw_text(font, silver, 895, 480, ALLEGRO_ALIGN_RIGHT, "Fugir");
+
+        // Number of especial attacks
+        if(numberOfEspecialAttacks == 1 or numberOfEspecialAttacks == 0)
+            al_draw_text(font, white, 770, 65, 0, ("Especial: " + to_string(numberOfEspecialAttacks)).c_str());
+        else
+            al_draw_text(font, white, 770, 65, 0, ("Especiais: " + to_string(numberOfEspecialAttacks)).c_str());
 
         //Change where to draw the indicator based on which action is true
         if(commands[0]){
@@ -167,6 +173,11 @@ public:
         al_draw_text(scoreFont, rose, 750, 258, 0, to_string(score).c_str());
     }
 
+    /*
+     *
+     * UI indicators
+     */
+
     void recordUI(int score){
         al_draw_text(scoreFont, rose, 750, 307, 0, to_string(score).c_str());
     }
@@ -179,5 +190,9 @@ public:
     void levelIndicator(int level){
         al_draw_filled_rounded_rectangle(695, 12, 774, 44, 7, 7, backgroundTransparent);
         al_draw_text(font, white, 700, 15, 0, ("Nível: " + to_string(level)).c_str());
+    }
+
+    void specialAttackIndicator(int numberOfEspecialAttacks){
+        al_draw_text(font, white, 700, 15, 0, ("Especial: " + to_string(numberOfEspecialAttacks)).c_str());
     }
 };
