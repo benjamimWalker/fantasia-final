@@ -1,9 +1,9 @@
 #include <allegro5/allegro5.h>
-#include <cmath>
-#include <vector>
+#include <map>
 #include <iostream>
-#include <ctime>
-using namespace std;
+
+using std::string;
+using std::to_string;
 
 #pragma once;
 class Monster{
@@ -165,7 +165,7 @@ public:
         bitmap = al_load_bitmap(spritePath.c_str());
     }
 
-    //destroying the image loaded during the game execution
+    // Destroying the image loaded during the game execution
     void clean(){
         al_destroy_bitmap(bitmap);
     }
@@ -174,5 +174,4 @@ public:
     {
         return life <= rhs.life;
     }
-
 };

@@ -1,10 +1,10 @@
 #include <fstream>
 #include <iostream>
 
-using namespace std;
+using std::ifstream;
+using std::ofstream;
+
 class ScoreManager{
-
-
 public:
     // Creating file to store a score
     void createFile(){
@@ -28,7 +28,7 @@ public:
     }
 
     //set a new score
-    void setScore(int score){
+    void setRecord(int score){
         ofstream file;
         file.open("records.txt");
         file << score;

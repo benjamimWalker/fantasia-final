@@ -1,8 +1,5 @@
-#include <allegro5/allegro5.h>
-#include <cmath>
 #include <vector>
 #include <map>
-#include <iostream>
 #include "player.cpp"
 #include "monster.cpp"
 
@@ -12,7 +9,7 @@ class GameManager{
 public:
     static u_short gameMode;
     static bool isGameFinished;
-    static u_short numEnemies; // 18
+    static u_short numEnemies;
     static u_short level;
     static string selectedHero;
 
@@ -25,7 +22,8 @@ public:
    // Put Monsters on their place
     vector<Monster> populateEnemies(){
         vector<Monster> vec;
-        for (int i = 0; i < 3; i++){ //(random() % 3) + 1
+        vec.reserve(3);
+        for (int i = 0; i < (random() % 3) + 1; i++){
             vec.emplace_back(Monster());
         }
         return vec;
@@ -51,10 +49,6 @@ public:
 
          return false;
     }
-//
-//    void updateEnemiesLocalization(vector<Monster> monster){
-//
-//    }
     /*
      * Returns the index of the monster that is selected to be attacked
      */

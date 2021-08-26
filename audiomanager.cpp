@@ -1,12 +1,11 @@
 #include <iostream>
 #include <allegro5/allegro_audio.h>
-using namespace std;
+
+using std::string;
 
 class AudioManger{
-
 public:
     bool isPlaying = false;
-    bool isPlayingOnce = false;
     string whatIsPlaying;
 private:
     string prologue = "../assets/audios/músicas/prologue.ogg";
@@ -19,7 +18,6 @@ private:
     string monster_hurt = "../assets/audios/efeitos/monster_hurt.ogg";
 
     public:
-
     void playOnce(const string& effect, const string& playerName){
         string sampleToPlay;
         if(effect == "hurt"){
@@ -65,7 +63,11 @@ private:
         }
         ALLEGRO_SAMPLE *pr = al_load_sample(sampleToPlay.c_str());
         al_reserve_samples(2);
-        al_play_sample(pr, 0.06, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, nullptr);
+        if(whatIsPlaying == "prologue")
+            al_play_sample(pr, 0.10, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, nullptr);
+        else
+            al_play_sample(pr, 0.06, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, nullptr);
+
         isPlaying = true;
         return pr;
     }

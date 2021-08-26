@@ -4,38 +4,31 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_primitives.h>
-#include <cmath>
 #include <vector>
-#include <iostream>
 #include "player.cpp"
 #include "audiomanager.cpp"
 #include "gamemanager.cpp"
 #include "uimanager.cpp"
 #include "scoremanager.cpp"
 
-#include <unistd.h>
-// REALLY BIG TODO GARANTIR QUE O PERSONAGEM NÃO COMECE JÁ ENCIMA DE UM BANDO DE INIMIGOS
-
-using namespace std;
-
-//global game manager static variables
+// Global game manager static variables
 map<pair<int, int>, vector<Monster>> GameManager::enemiesLocalization;
 u_short GameManager::gameMode;
-u_short GameManager::numEnemies = 42; //The answer
+u_short GameManager::numEnemies = 35;
 u_short GameManager::level = 1;
 string GameManager::selectedHero;
 
 int main() {
     GameManager::selectedHero = "ada";
 
-    //audio files id
+    // Audio files id
     const u_int prologueId = 0;
     const u_int generalID = 1;
     const u_int battleId = 2;
     const u_int victoryId = 3;
     const u_int loseId = 4;
 
-    //creating pointer variables
+    // Creating pointer variables
     ALLEGRO_DISPLAY *display = nullptr;
     ALLEGRO_EVENT_QUEUE *eventQueue;
     ALLEGRO_BITMAP *playerSprite;
@@ -47,7 +40,7 @@ int main() {
     ALLEGRO_BITMAP *chest1;
     ALLEGRO_BITMAP *chest2;
     ALLEGRO_BITMAP *chest3;
-    ALLEGRO_TIMER *expTimer;
+    ALLEGRO_TIMER *exploringTimer;
     ALLEGRO_TIMER *fightTimer;
     ALLEGRO_SAMPLE *prologueMusic;
     ALLEGRO_SAMPLE *generalMusic;
@@ -65,7 +58,7 @@ int main() {
     ALLEGRO_BITMAP *startScreen;
 
     const u_short windowWidth = 919;
-    const u_short windowHeight = 517; //window properties
+    const u_short windowHeight = 517; // Window properties
 
     if (!al_init()) {
         al_show_native_message_box(display, "Temos problemas", "O jogo não conseguiu executar",
@@ -73,9 +66,9 @@ int main() {
                                    nullptr, ALLEGRO_MESSAGEBOX_ERROR);
     }
 
-    //display expTimer and fps creation
+    // Display exploringTimer and fps creation
     const int FPS = 60;
-    expTimer = al_create_timer(1.0 / FPS);
+    exploringTimer = al_create_timer(1.0 / FPS);
     fightTimer = al_create_timer(1.0 / 5);
     display = al_create_display(windowWidth, windowHeight);
     if (!display) {
@@ -84,7 +77,7 @@ int main() {
                                    nullptr, ALLEGRO_MESSAGEBOX_ERROR);
     }
 
-    // getting game settings done
+    // Getting game settings done
     enum Direction {
         DOWN, LEFT, RIGHT, UP
     };
@@ -97,27 +90,28 @@ int main() {
     al_set_window_title(display, "Fantasia Final");
     eventQueue = al_create_event_queue();
     al_install_keyboard();
-    al_install_mouse();
     al_install_audio();
     al_register_event_source(eventQueue, al_get_keyboard_event_source());
-    al_register_event_source(eventQueue, al_get_mouse_event_source());
     al_register_event_source(eventQueue, al_get_display_event_source(display));
-    al_register_event_source(eventQueue, al_get_timer_event_source(expTimer));
+    al_register_event_source(eventQueue, al_get_timer_event_source(exploringTimer));
     al_register_event_source(eventQueue, al_get_timer_event_source(fightTimer));
     al_init_image_addon();
     al_init_acodec_addon();
     al_init_primitives_addon();
 
-    // creating the instance of the audio manager
+    // Creating the instance of the audio manager
     AudioManger audioManager;
 
-    // creating the instance of the game manager
+    // Creating the instance of the game manager
     GameManager gameManager;
 
-    // creating the instance of the ui manager
+    // Creating the instance of the ui manager
     UIManager uiManager{};
 
-    // loading images for the 3 maps and chests
+    // Creating the instance of the score manager
+    ScoreManager scoreManager;
+
+    // Loading images for the 3 maps and chests
     map1 = al_load_bitmap("../assets/sprites/maps/mapa1.png");
     chest1 = al_load_bitmap("../assets/sprites/chest1.png");
     map2 = al_load_bitmap("../assets/sprites/maps/mapa2.png");
@@ -125,7 +119,7 @@ int main() {
     map3 = al_load_bitmap("../assets/sprites/maps/mapa3.png");
     chest3 = al_load_bitmap("../assets/sprites/chest3.png");
 
-    //Loading battle images in an array
+    // Loading battle images in an array
     battleBitmaps[0] = al_load_bitmap("../assets/sprites/maps/battlemap1.png");
     battleBitmaps[1] = al_load_bitmap("../assets/sprites/maps/battlemap2.png");
     battleBitmaps[2] = al_load_bitmap("../assets/sprites/maps/battlemap3.png");
@@ -183,7 +177,7 @@ int main() {
     audioManager.stopPlaying(prologueMusic);
 
 
-    // setting player character
+    // Setting player character
     Player player = Player(40, 0, 1.2, GameManager::selectedHero);
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
@@ -195,7 +189,7 @@ int main() {
     int direction; //range from zero to four for changing the image's direction
     float sX = playerSpriteWidth; //the width of each individual sprite in the sprite sheet
     bool isSpriteInNeedToUpdateByKeyInput = false;
-    al_start_timer(expTimer);
+    al_start_timer(exploringTimer);
     al_start_timer(fightTimer);
     ALLEGRO_COLOR attackColor = al_map_rgb(48, 219, 48);
     ALLEGRO_COLOR damageColor = al_map_rgba(217, 58, 43, 220);
@@ -211,31 +205,30 @@ int main() {
     vector<Monster> currentMonster; //Monsters loaded when entering in battle mode
     pair<int, int> currentCoordinate;
 
-    bool isOnBattle; //Set to true when an enemy is found
-    float sXM1 = 0; //Location to start drawing the first monster image of the spritesheet
-    float sXM2 = 0; //Location to start drawing the first monster image of the spritesheet
-    float sXM3 = 0; //Location to start drawing the first monster image of the spritesheet
+    bool isOnBattle; // Set to true when an enemy is found
+    float sXM1 = 0; // Location to start drawing the first monster image of the spritesheet
+    float sXM2 = 0; // Location to start drawing the first monster image of the spritesheet
+    float sXM3 = 0; // Location to start drawing the first monster image of the spritesheet
     bool commandsIndicies[3] = {true, false, false}; // Array with the state of the commands attack, especial and flee
     int previousTimeCount; // Used for counting time to an enemy wait a little for attack, or else it would be pretty fast
 
     uiManager.prepareUI();
-    ScoreManager scoreManager;
 
-    // main loop
+    // Main loop
     while (running) {
-        int battleBitMapIndex; //Index for the battleBitMapArray which will be a random number
+        int battleBitMapIndex; // Index for the battleBitMapArray which will be a random number
         if (GameManager::gameMode == EXPLORING) {
             //playing the themesong
             if (!audioManager.isPlaying) {
                 generalMusic = audioManager.playLoop(generalID);
             }
 
-            // detects whether the player has found a monster and changes the game mode
+            // Detects whether the player has found a monster and changes the game mode
             if (gameManager.foundMonster(player, &currentCoordinate) and not player.exempted) {
                 GameManager::gameMode = FIGHTING; //boolean to enter the fight (battle) mode
                 audioManager.stopPlaying(generalMusic); //stopping the music
             }
-                //If player exit monster area he can find another
+                // If player exit monster area he/she can find another
             else if (not gameManager.foundMonster(player, &currentCoordinate)) {
                 player.exempted = false;
             }
@@ -255,14 +248,14 @@ int main() {
             // Play victory song
             if (player.foundChest()) {
 
-                //Recover life
+                // Recover life
                 player.life = player.fullLife;
                 GameManager::enemiesLocalization.clear(); // Clearing monster with coordinates
                 // Setting new monsters with new coordinates
                 gameManager.sortPositions((int) (windowWidth - playerSpriteWidth) - 2,
                                           (int) (windowHeight - playerSpriteWidth) - 2);
                 if (GameManager::level == 3) {
-                    //Aqui ganhou de verdade
+                    // Won
                     if (audioManager.isPlaying and audioManager.whatIsNowPlaying() == "geral") {
                         audioManager.stopPlaying(generalMusic);
                         audioManager.playLoop(victoryId);
@@ -282,11 +275,9 @@ int main() {
                         al_flip_display();
                         al_rest(0.75);
                         if (player.name == "alan") {
-                            // TODO MOSTRAR RECORD TAMBÉM
-
                             // New record
                             if(player.points > scoreManager.getRecord()){
-                                scoreManager.setScore(player.points);
+                                scoreManager.setRecord(player.points);
                                 al_draw_bitmap(alanWinRecordScreen, 0, 0, 0);
                                 uiManager.scoreUI(player.points);
                             }
@@ -298,12 +289,12 @@ int main() {
                                 uiManager.scoreUI(player.points);
                             }
                             al_flip_display();
-                            al_rest(4);
+                            al_rest(10);
                             running = false;
                         } else {
                             // New record
                             if(player.points > scoreManager.getRecord()){
-                                scoreManager.setScore(player.points);
+                                scoreManager.setRecord(player.points);
                                 al_draw_bitmap(adaWinRecordScreen, 0, 0, 0);
                                 uiManager.scoreUI(player.points);
                             }
@@ -314,10 +305,9 @@ int main() {
                                 uiManager.scoreUI(player.points);
                                 uiManager.recordUI(scoreManager.getRecord());
                             }
-                            // TODO MOSTRAR RECORD TAMBÉM
                             uiManager.scoreUI(player.points);
                             al_flip_display();
-                            al_rest(4);
+                            al_rest(10);
                             running = false;
                         }
                     }
@@ -358,23 +348,23 @@ int main() {
             al_wait_for_event(eventQueue, &event);
 
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                //TODO descomentar essa parte no final
-                //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
+                   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
                 running = false;
             }
-            if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == expTimer) {
-                //call to function for detecting player trying to cross the limits and make sure it doesn't do that
+            if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == exploringTimer) {
+                // Call to function for detecting player trying to cross the limits and make sure it doesn't do that
                 player.borderCollision();
 
-                // TODO [DEBUG DRAWING]
+                //  [DEBUG DRAWING]
                 for (const auto &enemy: GameManager::enemiesLocalization) {
                     for (auto monster: enemy.second) {
                         al_draw_filled_circle((float) enemy.first.first, (float) enemy.first.second, 13, al_map_rgb(255, 255, 255));
                     }
                 }
 
-                // TODO [DEBUG DRAWING]
+                //  [DEBUG DRAWING]
                 al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
+
                 // Drawing player
                 al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth,
                                       playerSpriteHeight, player.x, player.y, 0);
@@ -385,7 +375,7 @@ int main() {
 
                 al_flip_display();
 
-                // setting keyboard input
+                // Setting keyboard input
                 ALLEGRO_KEYBOARD_STATE keyState;
                 al_get_keyboard_state(&keyState);
                 isSpriteInNeedToUpdateByKeyInput = true;
@@ -394,28 +384,28 @@ int main() {
                 if (al_key_down(&keyState, ALLEGRO_KEY_A)) {
                     // Run
                     if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
-                        // Walk
+                    // Walk
                     else player.moveSpeed = 1.2;
                     player.x -= player.moveSpeed;
                     direction = LEFT;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_D)) {
                     // Run
-                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
-                        // Walk
+                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.2;
+                    // Walk
                     else player.moveSpeed = 1.2;
                     player.x += player.moveSpeed;
                     direction = RIGHT;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_W)) {
                     // Run
-                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
-                        // Walk
+                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.2;
+                    // Walk
                     else player.moveSpeed = 1.2;
                     direction = UP;
                     player.y -= player.moveSpeed;
                 } else if (al_key_down(&keyState, ALLEGRO_KEY_S)) {
                     // Run
-                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.1;
-                        // Walk
+                    if (al_key_down(&keyState, ALLEGRO_KEY_LSHIFT)) player.moveSpeed = 2.2;
+                    // Walk
                     else player.moveSpeed = 1.2;
                     player.y += player.moveSpeed;
                     direction = DOWN;
@@ -423,7 +413,7 @@ int main() {
                     isSpriteInNeedToUpdateByKeyInput = false;
                 }
 
-                //handles the characters animation
+                // Handles the characters animation
                 if (spriteSheetAnimationRefreshFPS == 10) {
                     if (isSpriteInNeedToUpdateByKeyInput) sX += playerSpriteWidth;
                     else sX = playerSpriteWidth;
@@ -437,12 +427,12 @@ int main() {
              * isOnBattle is previously set to true
              * */
 
-            //playing the theme song of the battle
+            // Playing the theme song of the battle
             if (!audioManager.isPlaying) {
                 battleMusic = audioManager.playLoop(battleId);
             }
 
-            //Executed once when a monster is found
+            // Executed once when a monster is found
             if (isOnBattle) {
                 player.justAttacked = false;
                 battleBitMapIndex = GameManager::level - 1;
@@ -457,12 +447,11 @@ int main() {
             ALLEGRO_EVENT event;
             al_wait_for_event(eventQueue, &event);
 
-            //Important for closing program with the window
+            // Important for closing program with the window
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                //TODO descomentar essa parte no final
-                //   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
-                running = false;
-                uiManager.clean();
+                   if (al_show_native_message_box(display, "Confirmação de saída", "Tem certeza que quer sair?", "", nullptr, ALLEGRO_MESSAGEBOX_YES_NO) == 1)
+                        running = false;
+                   uiManager.clean();
             }
             if (event.type == ALLEGRO_EVENT_TIMER and event.timer.source == fightTimer) {
                 // Drawing each one of the monster in this for loop
@@ -537,7 +526,7 @@ int main() {
                                                   40 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 1].bitmap) / 3 + (float) al_get_bitmap_width(GameManager::enemiesLocalization[currentCoordinate][i - 2].bitmap) / 3, 200, 0);
                         }
                     }
-                } //Done drawing monster(s) for this frame
+                } // Done drawing monster(s) for this frame
 
                 // Drawing player, if attacked, attacking or none
                 if (player.justAttacked) {
@@ -570,7 +559,7 @@ int main() {
                 uiManager.enemiesInfoBackground(GameManager::enemiesLocalization[currentCoordinate]); //monsters background info
                 al_flip_display();
             }
-            //Input by up, down, left and right keys
+            // Input by up, down, left and right keys
             if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
                 // Options input [ATTACK, ESPECIAL and FLEE]
                 if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
@@ -595,7 +584,7 @@ int main() {
                         commandsIndicies[ATTACK] = true;
                     }
                 }
-                //Monster switch with arrow keys
+                // Monster switch with arrow keys
                 if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) {
                     try {
                         gameManager.changeSelectedLeft(&GameManager::enemiesLocalization[currentCoordinate]);
@@ -647,9 +636,6 @@ int main() {
                                         audioManager.stopPlaying(battleMusic); // Stop battle song
                                         player.justFailedFleeing = false; // Did not fail
                                         gameManager.deselectAll(&GameManager::enemiesLocalization[currentCoordinate]);
-//                                        for (int i = 0; i < GameManager::enemiesLocalization[currentCoordinate].size(); i++) {
-//                                            GameManager::enemiesLocalization[currentCoordinate][i].clean();
-//                                        }
                                         commandsIndicies[FLEE] = false;
                                         commandsIndicies[ATTACK] = true;
                                         // GameManager::enemiesLocalization.erase(currentCoordinate);
@@ -703,14 +689,14 @@ int main() {
                     uiManager.recordUI(scoreManager.getRecord());
                     uiManager.scoreUI(player.points);
                     al_flip_display();
-                    al_rest(3);
+                    al_rest(10);
                     running = false;
                 } else {
                     al_draw_bitmap(adaDeathScreen, 0, 0, 0);
                     uiManager.recordUI(scoreManager.getRecord());
                     uiManager.scoreUI(player.points);
                     al_flip_display();
-                    al_rest(3);
+                    al_rest(10);
                     running = false;
                 }
 
@@ -718,8 +704,6 @@ int main() {
 
             }
 
-//            GameManager::gameMode = EXPLORING;
-//          player.exempted = true;
             isOnBattle = false;
 
         }
@@ -734,7 +718,6 @@ int main() {
     // Cleaning garbage
     al_destroy_display(display);
     al_uninstall_keyboard();
-    al_uninstall_mouse();
     al_uninstall_audio();
     al_destroy_bitmap(playerSprite);
     al_destroy_bitmap(playerBattleSprite);
@@ -756,7 +739,7 @@ int main() {
     al_destroy_bitmap(battleBitmaps[1]);
     al_destroy_bitmap(battleBitmaps[2]);
     al_destroy_event_queue(eventQueue);
-    al_destroy_timer(expTimer);
+    al_destroy_timer(exploringTimer);
     al_destroy_timer(fightTimer);
     for (int i = 0; i < GameManager::enemiesLocalization.size(); i++) {
         for (int j = 0; j < GameManager::enemiesLocalization[currentCoordinate].size(); j++) {
@@ -764,5 +747,4 @@ int main() {
         }
     }
     return 0;
-    //END OF CODE
 }

@@ -1,13 +1,8 @@
 #include <cmath>
 #include <iostream>
-#include <cstring>
-#include <utility>
-#include <cmath>
 #pragma once
-//TODO REMOVE THIS CLION UNNECESSARY STUFF
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-using namespace std;
+
+using std::string;
 
 class Player{
 public:
@@ -26,13 +21,11 @@ public:
     bool alive = true;
     bool exempted = false;
     bool justFailedFleeing = false;
-    int width;
-    int height;
     bool justAttacked = false;
     int numberOfEspecialAttack = 20;
     float x = 40, y = 40; //coordinates for drawing each image of the player
 
-     Player(int pLife, int pPoints, float pMoveSpeed, string pName){
+    Player(int pLife, int pPoints, float pMoveSpeed, string pName){
         life = pLife;
         fullLife = life;
         points = pPoints;
@@ -41,12 +34,12 @@ public:
         attack = 8.4;
     }
 
-    // calculates the distance between the player and some object by it's coordinates
+    // Calculates the distance between the player and some object by it's coordinates
     float distanceOf(int sourceX, int sourceY) const{
         return (float) sqrt(pow((float) sourceX - x, 2) + pow((float)sourceY - y, 2));
     }
 
-    //function for adjusting sprites dimensions according to the characters
+    // Function for adjusting sprites dimensions according to the characters
     void setDimensions() {
         spritePath = spritePath + name + ".png";
         battlePath = battlePath + name + "b.png";
@@ -65,7 +58,8 @@ public:
             individualSpriteY = (float) totalSpriteY / 4;
         }
     }
-    //function for detecting player trying to cross the limits and make sure it doesn't do that
+
+    // Function for detecting player trying to cross the limits and make sure it doesn't do that
     void borderCollision(){
         if (x <= 0.0) {
             x = 0.0;
@@ -81,7 +75,7 @@ public:
         }
     }
 
-    bool foundChest(){
+    bool foundChest() const{
         return x > 863 and y < 8;
      }
 
