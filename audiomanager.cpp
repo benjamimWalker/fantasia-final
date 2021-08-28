@@ -34,7 +34,10 @@ private:
         }
         ALLEGRO_SAMPLE *pr = al_load_sample(sampleToPlay.c_str());
         al_reserve_samples(2);
-        al_play_sample(pr, 0.3, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
+        if(playerName == "ada")
+            al_play_sample(pr, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
+        else al_play_sample(pr, 0.4, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
+
     }
 
     //Receives a level number, plays the corresponding song and return its sample
@@ -64,7 +67,7 @@ private:
         ALLEGRO_SAMPLE *pr = al_load_sample(sampleToPlay.c_str());
         al_reserve_samples(2);
         if(whatIsPlaying == "prologue")
-            al_play_sample(pr, 0.10, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, nullptr);
+            al_play_sample(pr, 0.15, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, nullptr);
         else
             al_play_sample(pr, 0.06, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, nullptr);
 

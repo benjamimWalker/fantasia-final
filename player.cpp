@@ -22,7 +22,7 @@ public:
     bool exempted = false;
     bool justFailedFleeing = false;
     bool justAttacked = false;
-    int numberOfEspecialAttack = 20;
+    int numberOfEspecialAttack = 15;
     float x = 40, y = 40; //coordinates for drawing each image of the player
 
     Player(int pLife, int pPoints, float pMoveSpeed, string pName){
@@ -31,7 +31,7 @@ public:
         points = pPoints;
         moveSpeed = pMoveSpeed;
         name = move(pName);
-        attack = 8.4;
+        attack = 5.7;
     }
 
     // Calculates the distance between the player and some object by it's coordinates

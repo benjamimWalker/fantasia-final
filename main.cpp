@@ -14,7 +14,7 @@
 // Global game manager static variables
 map<pair<int, int>, vector<Monster>> GameManager::enemiesLocalization;
 u_short GameManager::gameMode;
-u_short GameManager::numEnemies = 35;
+u_short GameManager::numEnemies = 36;
 u_short GameManager::level = 1;
 string GameManager::selectedHero;
 
@@ -178,7 +178,7 @@ int main() {
 
 
     // Setting player character
-    Player player = Player(40, 0, 1.2, GameManager::selectedHero);
+    Player player = Player(50, 0, 1.2, GameManager::selectedHero);
     player.setDimensions();
     playerSprite = al_load_bitmap(player.spritePath.c_str());
     playerBattleSprite = al_load_bitmap(player.battlePath.c_str());
@@ -356,14 +356,14 @@ int main() {
                 player.borderCollision();
 
                 //  [DEBUG DRAWING]
-                for (const auto &enemy: GameManager::enemiesLocalization) {
-                    for (auto monster: enemy.second) {
-                        al_draw_filled_circle((float) enemy.first.first, (float) enemy.first.second, 13, al_map_rgb(255, 255, 255));
-                    }
-                }
+//                for (const auto &enemy: GameManager::enemiesLocalization) {
+//                    for (auto monster: enemy.second) {
+//                        al_draw_filled_circle((float) enemy.first.first, (float) enemy.first.second, 13, al_map_rgb(255, 255, 255));
+//                    }
+//                }
 
                 //  [DEBUG DRAWING]
-                al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
+//                al_draw_filled_circle(player.x, player.y, 4, al_map_rgb(255, 255, 255));
 
                 // Drawing player
                 al_draw_bitmap_region(playerSprite, sX, (float) direction * playerSpriteHeight, playerSpriteWidth,
@@ -543,7 +543,7 @@ int main() {
                                al_get_timer_count(fightTimer) - previousTimeCount < 8) {
                         al_draw_tinted_bitmap(playerBattleSprite, damageColor, 800, 220, 0); //Drawing player's sprite
                         int hitValue = GameManager::enemiesLocalization[currentCoordinate][gameManager.getNextToAttack(GameManager::enemiesLocalization[currentCoordinate])].attack;
-                        if (hitValue >= 2 and hitValue <= 4)
+                        if (hitValue >= 1 and hitValue <= 4)
                             uiManager.damageUiIndicator(hitValue);
                         else{
                             uiManager.damageUiIndicator(0);

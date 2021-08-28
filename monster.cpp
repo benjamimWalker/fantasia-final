@@ -1,5 +1,4 @@
 #include <allegro5/allegro5.h>
-#include <map>
 #include <iostream>
 
 using std::string;
