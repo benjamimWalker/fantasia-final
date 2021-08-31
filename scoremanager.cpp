@@ -21,6 +21,7 @@ public:
         file.open("records.txt");
         if (not file.is_open()){
             createFile();
+            file.open("records.txt");
         }
         file >> record;
         file.close();
