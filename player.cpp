@@ -34,7 +34,7 @@ public:
         attack = 5.7;
     }
 
-    // Calculates the distance between the player and some object by it's coordinates
+    // Calculates the distance between the player and some object by its coordinates
     float distanceOf(int sourceX, int sourceY) const{
         return (float) sqrt(pow((float) sourceX - x, 2) + pow((float)sourceY - y, 2));
     }
